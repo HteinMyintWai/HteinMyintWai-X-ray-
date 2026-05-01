@@ -115,6 +115,21 @@
 <div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; padding:20px; z-index:3000; overflow-y:auto;">
     <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Admin Settings</h2>
     
+    <div class="card" style="background:#fff7ed; border: 1px solid #fdba74;">
+        <p><b>💰 Rate Settings (မြှောက်မည့်နှုန်း)</b></p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div>
+                <small>Doctor W Rate</small>
+                <input type="number" id="rateW" placeholder="2500">
+            </div>
+            <div>
+                <small>Doctor R Rate</small>
+                <input type="number" id="rateR" placeholder="2000">
+            </div>
+        </div>
+        <button class="btn btn-p" onclick="updateRates()">Update Rates</button>
+    </div>
+
     <div class="card" style="background:#f8fafc;">
         <p><b>Login Access Control</b></p>
         <div style="margin-bottom:10px; padding:10px; border:1px solid #eee;">
@@ -158,16 +173,24 @@
 
     let doctors = ["Dr. Win", "Dr. WTO", "Dr. AKZ", "Dr. POA", "Dr. Htar", "Dr. MO", "Dr. Byself", "Dr. Chit Min", "Dr. ANDK", "Dr. ACM", "Dr. Khaing Yu Swe"];
     let database = {};
-    let config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234' };
+    let config = { 
+        admin_user: 'admin', admin_pass: '9999', 
+        user_user: 'user', user_pass: '1234',
+        w_rate: 2500, r_rate: 2000 
+    };
 
     function startSync() {
-        document.getElementById('sync-status').innerText = "Syncing with Firebase Cloud...";
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
                 const rawData = snapshot.data();
                 if(rawData.db) database = rawData.db;
                 if(rawData.cfg) config = rawData.cfg;
                 if(rawData.drs) doctors = rawData.drs;
+                
+                // Update inputs in settings
+                document.getElementById('rateW').value = config.w_rate;
+                document.getElementById('rateR').value = config.r_rate;
+                
                 updateUI();
                 document.getElementById('sync-status').innerText = "Firebase Cloud Live Synced ✓";
                 document.getElementById('sync-status').style.color = "green";
@@ -183,6 +206,13 @@
             });
         } catch(e) { alert("Save Error: " + e.message); }
     }
+
+    window.updateRates = async () => {
+        config.w_rate = Number(document.getElementById('rateW').value) || 2500;
+        config.r_rate = Number(document.getElementById('rateR').value) || 2000;
+        await pushData();
+        alert("Rates Updated!");
+    };
 
     window.doLogin = () => {
         const u = document.getElementById('userIn').value;
@@ -287,16 +317,20 @@
         doctors.forEach((dr, i) => {
             let wQ = 0, rQ = 0;
             if(database[m]) Object.values(database[m]).forEach(day => { if(day[i]){ wQ += (+day[i].w||0); rQ += (+day[i].r||0); } });
+            
             if(wQ || rQ) {
-                let total = (wQ*2500) + (rQ*2000);
-                mBody += `<tr><td class="dr-name">${dr}</td><td>${wQ}</td><td>${(wQ*2500).toLocaleString()}</td><td>${rQ}</td><td>${(rQ*2000).toLocaleString()}</td><td style="color:#2563eb;">${total.toLocaleString()}</td></tr>`;
+                let wAmt = wQ * config.w_rate;
+                let rAmt = rQ * config.r_rate;
+                let total = wAmt + rAmt;
+                mBody += `<tr><td class="dr-name">${dr}</td><td>${wQ}</td><td>${wAmt.toLocaleString()}</td><td>${rQ}</td><td>${rAmt.toLocaleString()}</td><td style="color:#2563eb;">${total.toLocaleString()}</td></tr>`;
             }
+
             let tw = 0, tr = 0;
             Object.values(database).forEach(month => {
                 Object.values(month).forEach(day => { if(day[i]){ tw += (+day[i].w||0); tr += (+day[i].r||0); } });
             });
             if(tw || tr) {
-                yBody += `<tr><td class="dr-name">${dr}</td><td>${tw}</td><td>${tr}</td><td style="color:#059669;">${((tw*2500)+(tr*2000)).toLocaleString()}</td></tr>`;
+                yBody += `<tr><td class="dr-name">${dr}</td><td>${tw}</td><td>${tr}</td><td style="color:#059669;">${((tw*config.w_rate)+(tr*config.r_rate)).toLocaleString()}</td></tr>`;
             }
         });
         document.getElementById('m-table-body').innerHTML = mBody;
