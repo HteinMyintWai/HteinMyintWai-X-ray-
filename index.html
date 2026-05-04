@@ -34,6 +34,10 @@
 
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         #sync-status { font-size: 11px; text-align: center; color: var(--primary); font-weight: bold; padding: 5px; }
+        
+        .search-container { position: relative; margin-bottom: 15px; }
+        .search-container .material-icons { position: absolute; left: 12px; top: 13px; color: #94a3b8; }
+        .search-input { text-align: left !important; padding-left: 45px !important; background: #0f172a !important; color: white !important; border: 1px solid #475569 !important; }
     </style>
 </head>
 <body>
@@ -66,9 +70,10 @@
 
     <div id="view-m">
         <div class="card">
-            <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 15px;">
+            <div style="display:grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 10px; margin-bottom: 15px;">
                 <input type="number" id="dayIn" placeholder="Day">
-                <select id="monthIn" style="margin-bottom:0;"></select>
+                <select id="monthIn"></select>
+                <input type="number" id="yearIn" placeholder="Year">
             </div>
             <button class="btn btn-p" style="height:60px; font-size:18px;" onclick="openEntry()">
                 <span class="material-icons">edit_note</span> စာရင်းသွင်းမည်
@@ -105,6 +110,12 @@
         <h2 style="color:white;">Day <span id="dayLabel" style="color:#38bdf8;"></span></h2>
         <button class="btn btn-s" style="width:110px; height:50px;" id="doneBtn">DONE</button>
     </div>
+
+    <div class="search-container">
+        <span class="material-icons">search</span>
+        <input type="text" id="drSearch" class="search-input" placeholder="ဆရာဝန်အမည် ရှာရန်..." oninput="filterDoctors()">
+    </div>
+
     <div id="entryRows"></div>
     <div class="entry-footer">
         <div>W Total<br><b id="d-w">0</b></div>
@@ -116,16 +127,10 @@
     <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Admin Settings</h2>
     
     <div class="card" style="background:#fff7ed; border: 1px solid #fdba74;">
-        <p><b>💰 Rate Settings (မြှောက်မည့်နှုန်း)</b></p>
+        <p><b>💰 Rate Settings</b></p>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <div>
-                <small>Doctor W Rate</small>
-                <input type="number" id="rateW" placeholder="2500">
-            </div>
-            <div>
-                <small>Doctor R Rate</small>
-                <input type="number" id="rateR" placeholder="2000">
-            </div>
+            <div><small>Doctor W Rate</small><input type="number" id="rateW"></div>
+            <div><small>Doctor R Rate</small><input type="number" id="rateR"></div>
         </div>
         <button class="btn btn-p" onclick="updateRates()">Update Rates</button>
     </div>
@@ -133,11 +138,11 @@
     <div class="card" style="background:#f8fafc;">
         <p><b>Login Access Control</b></p>
         <div style="margin-bottom:10px; padding:10px; border:1px solid #eee;">
-            <p>Admin: <input type="text" id="newAdminId" placeholder="Admin User"> <input type="text" id="newAdminPass" placeholder="Admin Pass"></p>
+            <p>Admin: <input type="text" id="newAdminId"> <input type="text" id="newAdminPass"></p>
             <button class="btn btn-p" onclick="updateCreds('admin')">Update Admin</button>
         </div>
         <div style="padding:10px; border:1px solid #eee;">
-            <p>User: <input type="text" id="newUserId" placeholder="User User"> <input type="text" id="newUserPass" placeholder="User Pass"></p>
+            <p>User: <input type="text" id="newUserId"> <input type="text" id="newUserPass"></p>
             <button class="btn btn-s" onclick="updateCreds('user')">Update User</button>
         </div>
     </div>
@@ -173,24 +178,15 @@
 
     let doctors = ["Dr. Win", "Dr. WTO", "Dr. AKZ", "Dr. POA", "Dr. Htar", "Dr. MO", "Dr. Byself", "Dr. Chit Min", "Dr. ANDK", "Dr. ACM", "Dr. Khaing Yu Swe"];
     let database = {};
-    let config = { 
-        admin_user: 'admin', admin_pass: '9999', 
-        user_user: 'user', user_pass: '1234',
-        w_rate: 2500, r_rate: 2000 
-    };
+    let config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
 
     function startSync() {
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
-                const rawData = snapshot.data();
-                if(rawData.db) database = rawData.db;
-                if(rawData.cfg) config = rawData.cfg;
-                if(rawData.drs) doctors = rawData.drs;
-                
-                // Update inputs in settings
-                document.getElementById('rateW').value = config.w_rate;
-                document.getElementById('rateR').value = config.r_rate;
-                
+                const data = snapshot.data();
+                if(data.db) database = data.db;
+                if(data.cfg) config = data.cfg;
+                if(data.drs) doctors = data.drs;
                 updateUI();
                 document.getElementById('sync-status').innerText = "Firebase Cloud Live Synced ✓";
                 document.getElementById('sync-status').style.color = "green";
@@ -200,30 +196,21 @@
 
     async function pushData() {
         document.getElementById('sync-status').innerText = "Saving to Cloud...";
-        try {
-            await setDoc(doc(db, "xray_system", "main_data"), {
-                db: database, cfg: config, drs: doctors
-            });
-        } catch(e) { alert("Save Error: " + e.message); }
+        try { await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors }); } 
+        catch(e) { alert("Save Error: " + e.message); }
     }
 
     window.updateRates = async () => {
         config.w_rate = Number(document.getElementById('rateW').value) || 2500;
         config.r_rate = Number(document.getElementById('rateR').value) || 2000;
-        await pushData();
-        alert("Rates Updated!");
+        await pushData(); alert("Rates Updated!");
     };
 
     window.doLogin = () => {
-        const u = document.getElementById('userIn').value;
-        const p = document.getElementById('passIn').value;
-        if(u === config.admin_user && p === config.admin_pass) { 
-            sessionStorage.setItem('role', 'admin'); initApp(); 
-        } else if(u === config.user_user && p === config.user_pass) { 
-            sessionStorage.setItem('role', 'user'); initApp(); 
-        } else {
-            document.getElementById('loginErr').innerText = "Username သို့မဟုတ် Password မှားနေပါသည်။";
-        }
+        const u = document.getElementById('userIn').value, p = document.getElementById('passIn').value;
+        if(u === config.admin_user && p === config.admin_pass) { sessionStorage.setItem('role', 'admin'); initApp(); }
+        else if(u === config.user_user && p === config.user_pass) { sessionStorage.setItem('role', 'user'); initApp(); }
+        else { document.getElementById('loginErr').innerText = "Login Failed!"; }
     };
 
     window.updateCreds = async (role) => {
@@ -234,8 +221,7 @@
             config.admin_user = document.getElementById('newAdminId').value || config.admin_user;
             config.admin_pass = document.getElementById('newAdminPass').value || config.admin_pass;
         }
-        await pushData();
-        alert("Credentials Updated!");
+        await pushData(); alert("Credentials Updated!");
     };
 
     window.addDr = async () => {
@@ -243,9 +229,7 @@
         if(n) { doctors.push(n); renderDrMgr(); document.getElementById('newDr').value=''; await pushData(); }
     };
 
-    window.removeDr = async (i) => {
-        if(confirm("ဖျက်မှာ သေချာလား?")) { doctors.splice(i,1); renderDrMgr(); await pushData(); }
-    };
+    window.removeDr = async (i) => { if(confirm("ဖျက်မှာ သေချာလား?")) { doctors.splice(i,1); renderDrMgr(); await pushData(); } };
 
     function initApp() {
         const role = sessionStorage.getItem('role');
@@ -256,10 +240,12 @@
         if(role === 'admin') document.getElementById('admin-gear').style.display = 'block';
         
         const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-        const year = new Date().getFullYear();
-        const sel = document.getElementById('monthIn');
-        sel.innerHTML = months.map(m => `<option value="${m}_${year}">${m} ${year}</option>`).join('');
-        sel.value = months[new Date().getMonth()] + "_" + year;
+        document.getElementById('monthIn').innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
+        document.getElementById('monthIn').selectedIndex = new Date().getMonth();
+        
+        // Year picker အရှင် (Default လက်ရှိနှစ်)
+        document.getElementById('yearIn').value = new Date().getFullYear();
+        
         startSync();
     }
 
@@ -275,79 +261,80 @@
         const d = document.getElementById('dayIn').value;
         if(!d || d < 1 || d > 31) return alert("မှန်ကန်သော နေ့စွဲထည့်ပါ");
         document.getElementById('entryModal').style.display='block';
+        document.getElementById('drSearch').value = '';
         loadDay();
     };
 
     function loadDay() {
-        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value;
+        const d = document.getElementById('dayIn').value;
         document.getElementById('dayLabel').innerText = d;
-        document.getElementById('entryRows').innerHTML = doctors.map((dr, i) => {
-            const val = (database[m] && database[m][d] && database[m][d][i]) ? database[m][d][i] : {w:'', r:''};
-            return `<div class="entry-row">
-                <div class="dr-tag">${dr}</div>
-                <input type="number" id="w-${i}" value="${val.w}" placeholder="0" oninput="window.saveLocal(${i})">
-                <input type="number" id="r-${i}" value="${val.r}" placeholder="0" oninput="window.saveLocal(${i})">
-            </div>`;
+        renderEntryRows(doctors);
+    }
+
+    function renderEntryRows(listToRender) {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value;
+        const dateKey = `${m}_${y}`;
+        document.getElementById('entryRows').innerHTML = listToRender.map((dr) => {
+            const originalIndex = doctors.indexOf(dr);
+            const val = (database[dateKey] && database[dateKey][d] && database[dateKey][d][originalIndex]) ? database[dateKey][d][originalIndex] : {w:'', r:''};
+            return `<div class="entry-row"><div class="dr-tag">${dr}</div>
+                <input type="number" id="w-${originalIndex}" value="${val.w}" placeholder="W" oninput="window.saveLocal(${originalIndex})">
+                <input type="number" id="r-${originalIndex}" value="${val.r}" placeholder="R" oninput="window.saveLocal(${originalIndex})"></div>`;
         }).join('');
         calcDaily();
     }
 
+    window.filterDoctors = () => {
+        const term = document.getElementById('drSearch').value.toLowerCase();
+        const filtered = doctors.filter(dr => dr.toLowerCase().includes(term));
+        renderEntryRows(filtered);
+    };
+
     window.saveLocal = (i) => {
-        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value;
-        if(!database[m]) database[m] = {}; if(!database[m][d]) database[m][d] = {};
-        database[m][d][i] = { w: document.getElementById(`w-${i}`).value, r: document.getElementById(`r-${i}`).value };
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        if(!database[dateKey]) database[dateKey] = {}; if(!database[dateKey][d]) database[dateKey][d] = {};
+        database[dateKey][d][i] = { w: document.getElementById(`w-${i}`).value, r: document.getElementById(`r-${i}`).value };
         calcDaily();
     };
 
     function calcDaily() {
         let tw = 0, tr = 0;
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
         doctors.forEach((_, i) => {
-            tw += (+document.getElementById(`w-${i}`).value || 0);
-            tr += (+document.getElementById(`r-${i}`).value || 0);
+            const wI = document.getElementById(`w-${i}`), rI = document.getElementById(`r-${i}`);
+            const dbVal = (database[dateKey] && database[dateKey][d] && database[dateKey][d][i]) ? database[dateKey][d][i] : {w:0, r:0};
+            tw += (wI ? (+wI.value || 0) : (+dbVal.w || 0)); tr += (rI ? (+rI.value || 0) : (+dbVal.r || 0));
         });
-        document.getElementById('d-w').innerText = tw;
-        document.getElementById('d-r').innerText = tr;
+        document.getElementById('d-w').innerText = tw; document.getElementById('d-r').innerText = tr;
     }
 
     function updateUI() {
-        const m = document.getElementById('monthIn').value;
-        if(!m) return;
-        document.getElementById('m-title').innerText = m.replace('_',' ') + " Report";
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        document.getElementById('m-title').innerText = `${m} ${y} Report`;
         let mBody = "", yBody = "";
         doctors.forEach((dr, i) => {
             let wQ = 0, rQ = 0;
-            if(database[m]) Object.values(database[m]).forEach(day => { if(day[i]){ wQ += (+day[i].w||0); rQ += (+day[i].r||0); } });
-            
+            if(database[dateKey]) Object.values(database[dateKey]).forEach(day => { if(day[i]){ wQ += (+day[i].w||0); rQ += (+day[i].r||0); } });
             if(wQ || rQ) {
-                let wAmt = wQ * config.w_rate;
-                let rAmt = rQ * config.r_rate;
-                let total = wAmt + rAmt;
+                let wAmt = wQ * config.w_rate, rAmt = rQ * config.r_rate, total = wAmt + rAmt;
                 mBody += `<tr><td class="dr-name">${dr}</td><td>${wQ}</td><td>${wAmt.toLocaleString()}</td><td>${rQ}</td><td>${rAmt.toLocaleString()}</td><td style="color:#2563eb;">${total.toLocaleString()}</td></tr>`;
             }
-
             let tw = 0, tr = 0;
-            Object.values(database).forEach(month => {
-                Object.values(month).forEach(day => { if(day[i]){ tw += (+day[i].w||0); tr += (+day[i].r||0); } });
-            });
-            if(tw || tr) {
-                yBody += `<tr><td class="dr-name">${dr}</td><td>${tw}</td><td>${tr}</td><td style="color:#059669;">${((tw*config.w_rate)+(tr*config.r_rate)).toLocaleString()}</td></tr>`;
-            }
+            Object.keys(database).forEach(key => { if(key.endsWith(y)) { Object.values(database[key]).forEach(day => { if(day[i]){ tw += (+day[i].w||0); tr += (+day[i].r||0); } }); } });
+            if(tw || tr) yBody += `<tr><td class="dr-name">${dr}</td><td>${tw}</td><td>${tr}</td><td style="color:#059669;">${((tw*config.w_rate)+(tr*config.r_rate)).toLocaleString()}</td></tr>`;
         });
-        document.getElementById('m-table-body').innerHTML = mBody;
-        document.getElementById('y-table-body').innerHTML = yBody;
+        document.getElementById('m-table-body').innerHTML = mBody; document.getElementById('y-table-body').innerHTML = yBody;
     }
 
     window.openModal = (id) => { document.getElementById(id).style.display='block'; if(id==='settingsModal') renderDrMgr(); };
     window.closeModal = (id) => { document.getElementById(id).style.display='none'; };
-    function renderDrMgr() {
-        document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold; border-bottom:1px solid #eee; padding:5px;">${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="window.removeDr(${i})">delete</span></div>`).join('');
-    }
+    function renderDrMgr() { document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold; border-bottom:1px solid #eee; padding:5px;">${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="window.removeDr(${i})">delete</span></div>`).join(''); }
 
     document.getElementById('loginBtn').onclick = window.doLogin;
     document.getElementById('logoutBtn').onclick = () => { sessionStorage.clear(); location.reload(); };
     document.getElementById('doneBtn').onclick = async () => { window.closeModal('entryModal'); await pushData(); };
     document.getElementById('monthIn').onchange = updateUI;
-
+    document.getElementById('yearIn').onchange = updateUI;
     window.onload = () => { if(sessionStorage.getItem('role')) initApp(); };
 </script>
 </body>
