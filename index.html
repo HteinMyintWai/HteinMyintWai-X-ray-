@@ -113,7 +113,7 @@
             <h3 id="entryTitle" style="margin:0;"></h3>
             <button class="btn btn-s" style="width:100px;" onclick="closeEntry()">DONE</button>
         </div>
-        <input type="text" id="drSearch" placeholder="ရှာဖွေရန်..." oninput="filterDoctors()" style="background:#1e293b; color:white; border:1px solid #334155; text-align:left; padding-left:15px; margin-bottom:0;">
+        <input type="text" id="drSearch" placeholder="ဆရာဝန်အမည်ဖြင့် ရှာဖွေရန်..." oninput="filterDoctors()" style="background:#1e293b; color:white; border:1px solid #334155; text-align:left; padding-left:15px; margin-bottom:0;">
     </div>
     
     <div id="entryRows"></div>
@@ -125,11 +125,11 @@
                 <b id="sumDr" style="font-size:18px;">0</b>
             </div>
             <div>
-                <small>Sum W</small><br>
+                <small>Total W</small><br>
                 <b id="sumW" style="font-size:18px; color: #38bdf8;">0</b>
             </div>
             <div>
-                <small>Sum R</small><br>
+                <small>Total R</small><br>
                 <b id="sumR" style="font-size:18px; color: #fbbf24;">0</b>
             </div>
         </div>
@@ -138,9 +138,9 @@
 
 <div id="fullSheetModal" class="full-modal">
     <div style="padding:15px; background:#1e293b; color:white; display:flex; justify-content:space-between; align-items:center;">
-        <b>Full Breakdown</b>
+        <b>Full Monthly Sheet</b>
         <div style="display:flex; gap:20px;">
-            <span class="material-icons" style="cursor:pointer;" onclick="printDiv('fullSheetTable', 'Full Breakdown')">print</span>
+            <span class="material-icons" style="cursor:pointer;" onclick="printDiv('fullSheetTable', 'Full Monthly Breakdown')">print</span>
             <span class="material-icons" onclick="closeModal('fullSheetModal')" style="cursor:pointer;">close</span>
         </div>
     </div>
@@ -150,23 +150,26 @@
 </div>
 
 <div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; padding:20px; z-index:3000; overflow-y:auto;">
-    <h3>Settings</h3>
+    <h3>Admin Settings</h3>
     <div class="card" style="background:#f0f9ff;">
-        <p><b>🔐 Accounts</b></p>
+        <p><b>🔐 Change Username & Password</b></p>
+        <small>Admin Account</small>
         <input type="text" id="newAdminU" placeholder="Admin Username">
         <input type="text" id="newAdminP" placeholder="Admin Password">
+        <hr>
+        <small>User Account</small>
         <input type="text" id="newUserU" placeholder="User Username">
         <input type="text" id="newUserP" placeholder="User Password">
-        <button class="btn btn-p" onclick="updateAccounts()">Update Accounts</button>
+        <button class="btn btn-p" onclick="updateAccounts()">Save All Passwords</button>
     </div>
     <div class="card">
-        <p><b>💰 Rates</b></p>
+        <p><b>💰 W/R Rates</b></p>
         W: <input type="number" id="rateW">
         R: <input type="number" id="rateR">
         <button class="btn btn-p" onclick="saveConfig()">Save Rates</button>
     </div>
     <div class="card">
-        <p><b>👨‍⚕️ Doctors</b></p>
+        <p><b>👨‍⚕️ Manage Doctors</b></p>
         <div style="display:flex; gap:8px;">
             <input type="text" id="newDr" placeholder="Doctor Name">
             <button class="btn btn-p" style="width:70px;" onclick="addDr()">ADD</button>
@@ -201,13 +204,13 @@
         const p = document.getElementById('passIn').value;
         if(u === config.admin_u && p === config.admin_p) { sessionStorage.setItem('role', 'admin'); launchApp(); }
         else if(u === config.user_u && p === config.user_p) { sessionStorage.setItem('role', 'user'); launchApp(); }
-        else { document.getElementById('loginErr').innerText = "Incorrect!"; }
+        else { document.getElementById('loginErr').innerText = "Incorrect Login Details!"; }
     };
 
     function launchApp() {
         document.getElementById('login-screen').style.display='none';
         document.getElementById('app-body').style.display='block';
-        document.getElementById('display-u').innerText = "Account: " + (sessionStorage.getItem('role'));
+        document.getElementById('display-u').innerText = "Active User: " + (sessionStorage.getItem('role'));
         if(sessionStorage.getItem('role') === 'admin') document.getElementById('admin-gear').style.display = 'block';
         
         const mArr = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -249,7 +252,7 @@
 
     window.openEntry = () => {
         const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value;
-        if(!d || !y) return alert("Fill Day/Year!");
+        if(!d || !y) return alert("Please fill Day and Year first!");
         document.getElementById('entryModal').style.display='block';
         document.getElementById('entryTitle').innerText = `${d} ${m} ${y}`;
         document.getElementById('drSearch').value = "";
@@ -268,10 +271,10 @@
             const i = doctors.indexOf(dr);
             const val = (database[dateKey]?.[d]?.[i]) || {w:'', r:''};
             return `<div class="card" style="background:#1e293b; color:white;">
-                <b style="color:var(--secondary);">${dr}</b>
-                <div style="display:flex; gap:10px; margin-top:8px;">
-                    W: <input type="number" id="w-${i}" value="${val.w}" oninput="saveRow(${i})" style="background:#0f172a; color:white;">
-                    R: <input type="number" id="r-${i}" value="${val.r}" oninput="saveRow(${i})" style="background:#0f172a; color:white;">
+                <b style="color:var(--secondary); font-size: 16px;">${dr}</b>
+                <div style="display:flex; gap:15px; margin-top:8px;">
+                    <div style="flex:1">W: <input type="number" id="w-${i}" value="${val.w}" oninput="saveRow(${i})" style="background:#0f172a; color:white; margin:0;"></div>
+                    <div style="flex:1">R: <input type="number" id="r-${i}" value="${val.r}" oninput="saveRow(${i})" style="background:#0f172a; color:white; margin:0;"></div>
                 </div>
             </div>`;
         }).join('');
@@ -306,7 +309,7 @@
 
     window.updateUI = () => {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
-        document.getElementById('m-label').innerText = `${m} ${y} Report`;
+        document.getElementById('m-label').innerText = `${m} ${y} Monthly Report`;
         let mH = "", yH = "";
         doctors.forEach((dr, i) => {
             let mw = 0, mr = 0;
@@ -351,26 +354,26 @@
         if(n) { doctors.push(n); await pushData(); document.getElementById('newDr').value=''; renderDrMgr(); }
     };
 
-    window.removeDr = async (i) => { if(confirm("Delete?")) { doctors.splice(i,1); await pushData(); renderDrMgr(); } };
+    window.removeDr = async (i) => { if(confirm("Permanently delete this doctor?")) { doctors.splice(i,1); await pushData(); renderDrMgr(); } };
 
     window.updateAccounts = async () => {
         config.admin_u = document.getElementById('newAdminU').value;
         config.admin_p = document.getElementById('newAdminP').value;
         config.user_u = document.getElementById('newUserU').value;
         config.user_p = document.getElementById('newUserP').value;
-        await pushData(); alert("Account Settings Saved!");
+        await pushData(); alert("All Account Credentials Updated!");
     };
 
     window.saveConfig = async () => {
         config.w_rate = Number(document.getElementById('rateW').value);
         config.r_rate = Number(document.getElementById('rateR').value);
-        await pushData(); alert("Rates Saved!");
+        await pushData(); alert("Rates Saved Successfully!");
     };
 
     function renderDrMgr() {
         document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
-            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;">
-                ${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="removeDr(${i})">delete</span>
+            <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee; align-items:center;">
+                <span>${dr}</span> <span class="material-icons" style="color:red; cursor:pointer;" onclick="removeDr(${i})">delete</span>
             </div>`).join('');
     }
 
