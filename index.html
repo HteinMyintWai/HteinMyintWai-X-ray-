@@ -60,14 +60,15 @@
         .sheet-table td { font-size: 11px; padding: 5px; min-width: 35px; }
         .day-col { background: #f1f5f9; color: #475569; }
 
-        /* Print Settings */
+        /* --- PRINT CSS အသစ် --- */
         @media print {
             body * { visibility: hidden; }
-            #view-m, #view-m *, #view-y, #view-y *, #fullSheetModal, #fullSheetModal * { visibility: visible; }
+            #app-body, #app-body *, #fullSheetModal, #fullSheetModal * { visibility: visible; }
             #fullSheetModal { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
             .btn, #sync-status, .material-icons, .selection-row, #admin-gear, #logoutBtn, .modal-header span { display: none !important; }
-            .card { box-shadow: none; border: 1px solid #ccc; margin: 0; padding: 10px; }
-            table { font-size: 10px; width: 100%; border-collapse: collapse; }
+            #view-m, #view-y { position: absolute; top: 0; left: 0; width: 100%; }
+            .card { box-shadow: none; border: 1px solid #000; margin-bottom: 20px; padding: 10px; }
+            table { width: 100%; border-collapse: collapse; font-size: 10px; }
             th, td { border: 1px solid black !important; color: black !important; }
             .dr-name { position: static; background: white !important; }
         }
@@ -100,7 +101,7 @@
         <button class="btn btn-p" id="tab-m" onclick="switchTab('m')">လချုပ်</button>
         <button class="btn" id="tab-y" style="background:#cbd5e1; color:#475569;" onclick="switchTab('y')">နှစ်ချုပ်</button>
         <button class="btn btn-w" onclick="openFullSheet()"><span class="material-icons">grid_on</span> ဇယား</button>
-        <button class="btn" style="background:#475569;" onclick="window.printReport()"><span class="material-icons">print</span> Print</button>
+        <button class="btn" style="background:#475569;" onclick="window.printReport()"><span class="material-icons">print</span> PRINT</button>
     </div>
 
     <div id="view-m">
@@ -131,14 +132,16 @@
         </div>
     </div>
 
-    <div id="view-y" style="display:none;" class="card">
-        <h3 style="text-align: center; color:var(--secondary);">Yearly Summary</h3>
-        <table>
-            <thead>
-                <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W</th><th>R</th><th>Total (Ks)</th></tr>
-            </thead>
-            <tbody id="y-table-body"></tbody>
-        </table>
+    <div id="view-y" style="display:none;">
+        <div class="card">
+            <h3 style="text-align: center; color:var(--secondary);">Yearly Summary</h3>
+            <table>
+                <thead>
+                    <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W</th><th>R</th><th>Total (Ks)</th></tr>
+                </thead>
+                <tbody id="y-table-body"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -387,6 +390,7 @@
 
     window.closeFullSheet = () => { document.getElementById('fullSheetModal').style.display = 'none'; };
 
+    // --- PRINT FUNCTION အသစ် (လချုပ်/နှစ်ချုပ်/ဇယား အကုန်ရသည်) ---
     window.printReport = () => {
         const isSheetOpen = document.getElementById('fullSheetModal').style.display === 'flex';
         if (!isSheetOpen) {
