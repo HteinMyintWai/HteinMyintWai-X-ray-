@@ -3,47 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>X-ray Pro - Cloud Sync</title>
+    <title>X-ray Pro - Full Stable Cloud</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root { --primary: #2563eb; --secondary: #10b981; --danger: #ef4444; --bg: #f8fafc; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: var(--bg); margin: 0; padding: 12px; color: #1e293b; }
         
-        /* Modern UI Style from Images */
         .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #e2e8f0; }
         .btn { border: none; padding: 14px; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; width: 100%; transition: 0.2s; }
-        .btn-p { background: var(--primary); }
-        .btn-s { background: var(--secondary); }
-        .btn-d { background: var(--danger); }
+        .btn-p { background: var(--primary); } .btn-s { background: var(--secondary); } .btn-d { background: var(--danger); }
         
-        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; text-align: center; font-size: 16px; outline: none; margin-bottom: 12px; background: #fff; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; text-align: center; font-size: 16px; outline: none; margin-bottom: 12px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; border-radius: 10px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
         th { background: #334155; color: white; padding: 12px 5px; border: 1px solid #e2e8f0; }
         td { padding: 12px 5px; border: 1px solid #e2e8f0; text-align: center; font-weight: 600; }
         .dr-name { text-align: left; padding-left: 15px; color: var(--primary); }
 
-        /* Login Screen Overlay */
+        /* Login Screen Style */
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         
-        /* Modal Styles */
+        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; overflow-y: auto; padding: 15px; }
-        .sticky-header { position: sticky; top: 0; background: white; padding-bottom: 10px; z-index: 100; border-bottom: 1px solid #eee; margin-bottom: 15px; }
         .sticky-footer { position: sticky; bottom: 0; background: #1e293b; padding: 20px; border-radius: 20px 20px 0 0; color: white; margin-top: 20px; }
 
         @media print {
-            #app-body, .btn, .material-icons { display: none !important; }
+            body > *:not(#print-area) { display: none !important; }
             #print-area { display: block !important; }
         }
     </style>
 </head>
 <body>
 
-<div id="print-area" style="display:none;"></div>
+<div id="print-area"></div>
 
 <div id="login-screen">
-    <div class="card" style="width: 100%; max-width: 350px; text-align: center; border-radius: 25px;">
+    <div class="card" style="width: 100%; max-width: 350px; text-align: center;">
         <h2 style="color: var(--primary); margin-bottom: 25px;">X-RAY SYSTEM</h2>
         <input type="password" id="passIn" placeholder="Password ကို ရိုက်ထည့်ပါ">
         <button class="btn btn-p" onclick="doLogin()">ဝင်မည် (LOGIN)</button>
@@ -60,12 +56,6 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <button class="btn btn-p" id="tab-m" onclick="switchTab('m')">လချုပ်</button>
-        <button class="btn" id="tab-y" style="background:#cbd5e1; color:#475569;" onclick="switchTab('y')">နှစ်ချုပ်</button>
-        <button class="btn" style="background:#818cf8;" onclick="openFullSheet()">ဇယားကွက်</button>
-    </div>
-
     <div class="card">
         <div style="display: grid; grid-template-columns: 1fr 2fr 1.2fr; gap: 10px;">
             <input type="number" id="dayIn" placeholder="နေ့">
@@ -75,33 +65,26 @@
         <button class="btn btn-p" onclick="openEntry()">စာရင်းသွင်းမည်</button>
     </div>
 
-    <div id="view-m">
-        <div class="card">
-            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
-                <h3 id="m-label" style="margin:0; font-size:18px;">Monthly Report</h3>
-                <button class="btn btn-s" style="width: 80px; padding: 8px;" onclick="printDiv('m-table-div')">PRINT</button>
-            </div>
-            <div id="m-table-div" style="overflow-x:auto;">
-                <table id="m-table">
-                    <thead>
-                        <tr><th rowspan="2" class="dr-name">Doctor</th><th colspan="2">W</th><th colspan="2">R</th><th rowspan="2">Total</th></tr>
-                        <tr><th>Q</th><th>Amt</th><th>Q</th><th>Amt</th></tr>
-                    </thead>
-                    <tbody id="m-body"></tbody>
-                </table>
-            </div>
+    <div class="card">
+        <h3 id="m-label" style="margin-top:0;">Monthly Report</h3>
+        <div style="overflow-x:auto;">
+            <table id="m-table">
+                <thead>
+                    <tr><th rowspan="2" class="dr-name">Doctor</th><th colspan="2">W</th><th colspan="2">R</th><th rowspan="2">Total</th></tr>
+                    <tr><th>Q</th><th>Amt</th><th>Q</th><th>Amt</th></tr>
+                </thead>
+                <tbody id="m-body"></tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <div id="entryModal" class="modal">
-    <div class="sticky-header">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 id="entryTitle" style="margin:0;"></h3>
-            <button class="btn btn-s" style="width:100px;" onclick="closeEntry()">ပြီးပြီ</button>
-        </div>
-        <input type="text" id="drSearch" placeholder="ရှာဖွေရန်..." oninput="filterDoctors()" style="text-align:left; padding-left:15px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 id="entryTitle" style="margin:0;"></h3>
+        <button class="btn btn-s" style="width:100px;" onclick="closeEntry()">ပြီးပြီ</button>
     </div>
+    <input type="text" id="drSearch" placeholder="ဆရာဝန်အမည်ဖြင့် ရှာဖွေရန်..." oninput="filterDoctors()" style="text-align:left; padding-left:15px;">
     
     <div id="entryRows"></div>
 
@@ -115,26 +98,16 @@
 </div>
 
 <div id="settingsModal" class="modal">
-    <div class="sticky-header">
-        <h3>Settings</h3>
-    </div>
+    <h3>Settings</h3>
     <div class="card">
-        <p><b>💰 Rates</b></p>
-        W Rate: <input type="number" id="rateW">
-        R Rate: <input type="number" id="rateR">
+        <p><b>💰 Rates (ဈေးနှုန်းများ)</b></p>
+        W: <input type="number" id="rateW">
+        R: <input type="number" id="rateR">
         <button class="btn btn-p" onclick="saveConfig()">Save Rates</button>
     </div>
     <div class="card">
-        <p><b>👨‍⚕️ Manage Doctors</b></p>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="newDr" placeholder="Doctor Name" style="margin-bottom:0;">
-            <button class="btn btn-p" style="width:80px;" onclick="addDr()">ADD</button>
-        </div>
-        <div id="drManagerList" style="margin-top:15px;"></div>
-    </div>
-    <div class="card">
         <p><b>🔐 Change Password</b></p>
-        <input type="text" id="newPass" placeholder="New Password">
+        <input type="text" id="newPass" placeholder="Password အသစ်">
         <button class="btn btn-d" onclick="updatePass()">Update Password</button>
     </div>
     <button class="btn btn-d" onclick="closeModal('settingsModal')">CLOSE</button>
@@ -144,7 +117,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // --- Firebase Configuration ---
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyAo0NxlLIUtWzIJJx8Ein5Ftidacw0W9Lw",
         authDomain: "myrecordsystem-af249.firebaseapp.com",
@@ -161,7 +134,7 @@
     let database = {};
     let config = { password: '9999', w_rate: 4000, r_rate: 2500 };
 
-    // --- Authentication ---
+    // Login Function
     window.doLogin = () => {
         const p = document.getElementById('passIn').value;
         if(p === config.password) {
@@ -182,7 +155,6 @@
         startSync();
     }
 
-    // --- Cloud Sync ---
     function startSync() {
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
@@ -199,16 +171,10 @@
         await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors });
     }
 
-    // --- Entry Logic ---
     window.openEntry = () => {
         document.getElementById('entryModal').style.display='block';
         document.getElementById('entryTitle').innerText = `${document.getElementById('dayIn').value} ${document.getElementById('monthIn').value}`;
         renderRows(doctors);
-    };
-
-    window.filterDoctors = () => {
-        const q = document.getElementById('drSearch').value.toLowerCase();
-        renderRows(doctors.filter(dr => dr.toLowerCase().includes(q)));
     };
 
     function renderRows(list) {
@@ -249,9 +215,9 @@
 
     window.closeEntry = async () => { document.getElementById('entryModal').style.display='none'; await pushData(); };
 
-    // --- UI Update ---
     window.updateUI = () => {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        document.getElementById('m-label').innerText = `${m} ${y} Report`;
         let mH = "";
         doctors.forEach((dr, i) => {
             let mw = 0, mr = 0;
@@ -259,43 +225,15 @@
             if(mw || mr) mH += `<tr><td class="dr-name">${dr}</td><td>${mw}</td><td>${(mw*config.w_rate)}</td><td>${mr}</td><td>${(mr*config.r_rate)}</td><td>${(mw*config.w_rate+mr*config.r_rate)}</td></tr>`;
         });
         document.getElementById('m-body').innerHTML = mH;
-        document.getElementById('rateW').value = config.w_rate;
-        document.getElementById('rateR').value = config.r_rate;
-        renderDrMgr();
-    };
-
-    window.addDr = async () => {
-        const n = document.getElementById('newDr').value;
-        if(n) { doctors.push(n); await pushData(); document.getElementById('newDr').value=''; }
-    };
-
-    window.removeDr = async (i) => { if(confirm("ဖျက်မှာ သေချာလား?")) { doctors.splice(i,1); await pushData(); } };
-
-    function renderDrMgr() {
-        document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
-            <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee;">
-                ${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="removeDr(${i})">delete</span>
-            </div>`).join('');
-    }
-
-    window.saveConfig = async () => {
-        config.w_rate = Number(document.getElementById('rateW').value);
-        config.r_rate = Number(document.getElementById('rateR').value);
-        await pushData(); alert("Rates သိမ်းဆည်းပြီးပါပြီ!");
     };
 
     window.updatePass = async () => {
         const p = document.getElementById('newPass').value;
-        if(p) { config.password = p; await pushData(); alert("Password အသစ် ပြောင်းပြီးပါပြီ!"); }
+        if(p) { config.password = p; await pushData(); alert("Password ပြောင်းလဲပြီးပါပြီ!"); }
     };
 
     window.openModal = (id) => document.getElementById(id).style.display='block';
     window.closeModal = (id) => document.getElementById(id).style.display='none';
-    window.switchTab = (t) => { /* Tab Switching Logic */ };
-    window.printDiv = (id) => { window.print(); };
-
-    document.getElementById('monthIn').onchange = updateUI;
-    document.getElementById('yearIn').onchange = updateUI;
 </script>
 </body>
 </html>
