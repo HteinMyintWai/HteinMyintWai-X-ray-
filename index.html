@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>X-ray Yearly - Stable</title>
+    <title>X-ray Pro - Full Stable</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        .btn { border: none; padding: 12px; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-p { background: var(--primary); }
-        .btn-s { background: #10b981; }
+        :root { --primary: #2563eb; --secondary: #10b981; --danger: #ef4444; --bg: #f1f5f9; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); margin: 0; padding: 12px; color: #1e293b; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th { background: #334155; color: white; padding: 10px; border: 1px solid #1e293b; }
-        td { padding: 10px; border: 1px solid #e2e8f0; text-align: center; }
-        .dr-col { text-align: left; font-weight: bold; color: var(--primary); }
+        .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .btn { border: none; padding: 12px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; width: 100%; }
+        .btn-p { background: var(--primary); } .btn-s { background: var(--secondary); } .btn-d { background: var(--danger); }
+        
+        input, select { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 10px; text-align: center; font-size: 16px; outline: none; margin-bottom: 10px; }
 
-        #login-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#1e293b; z-index:5000; display:flex; align-items:center; justify-content:center; }
-        #print-area { display: none; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; background: white; }
+        th { background: #334155; color: white; padding: 10px 5px; border: 1px solid #1e293b; }
+        td { padding: 10px 5px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; }
+        .dr-name { text-align: left; padding-left: 10px; background: #f8fafc; color: var(--primary); position: sticky; left: 0; z-index: 5; }
+
+        #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #0f172a; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #entryModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 1000; overflow-y: auto; padding: 15px; }
+        .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 4000; flex-direction: column; }
+
+        .sticky-footer { position: sticky; bottom: 0; background: #1e293b; padding: 15px; border-radius: 15px 15px 0 0; color: white; margin-top: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.2); }
 
         @media print {
-            body * { display: none !important; }
+            body > *:not(#print-area) { display: none !important; }
             #print-area { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
-            table { width: 100%; border: 1px solid black; }
-            th, td { border: 1px solid black !important; padding: 8px; color: black !important; }
-            h2 { text-align: center; }
+            table { width: 100%; border: 1px solid black !important; }
+            th, td { border: 1px solid black !important; color: black !important; padding: 6px; font-size: 11px; }
         }
     </style>
 </head>
@@ -35,56 +40,140 @@
 <div id="print-area"></div>
 
 <div id="login-screen">
-    <div class="card" style="width:300px; text-align:center;">
-        <h3>X-RAY LOGIN</h3>
-        <input type="password" id="passIn" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; text-align:center;">
+    <div class="card" style="width: 100%; max-width: 320px; text-align: center;">
+        <h2 style="color: var(--primary);">X-RAY LOGIN</h2>
+        <input type="text" id="userIn" placeholder="Username">
+        <input type="password" id="passIn" placeholder="Password">
         <button class="btn btn-p" onclick="doLogin()">SIGN IN</button>
+        <p id="loginErr" style="color:red; font-size:12px; margin-top:10px;"></p>
     </div>
 </div>
 
 <div id="app-body" style="display:none;">
-    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-        <b>X-ray Dashboard</b>
-        <span class="material-icons" style="color:red; cursor:pointer;" onclick="location.reload()">logout</span>
+    <div class="card" style="display:flex; justify-content: space-between; align-items: center;">
+        <div>
+            <b id="display-u" style="color: var(--primary);">User</b>
+            <small id="display-r" style="display:block; color:#64748b;">Mode</small>
+        </div>
+        <div style="display:flex; gap: 15px;">
+            <span class="material-icons" id="admin-gear" style="display:none; cursor:pointer;" onclick="openModal('settingsModal')">settings</span>
+            <span class="material-icons" style="color:var(--danger); cursor:pointer;" onclick="location.reload()">logout</span>
+        </div>
     </div>
 
     <div class="card">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-            <input type="number" id="dayIn" placeholder="Day">
-            <select id="monthIn">
-                <option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option>
-                <option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option>
-                <option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option>
-                <option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option>
-            </select>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1.2fr; gap: 8px;">
+            <input type="number" id="dayIn" placeholder="နေ့">
+            <select id="monthIn"></select>
+            <input type="number" id="yearIn" placeholder="ခုနှစ်">
         </div>
-        <button class="btn btn-p" onclick="openEntry()">စာရင်းသွင်းရန် နှိပ်ပါ</button>
+        <button class="btn btn-p" onclick="openEntry()">စာရင်းအသစ်သွင်းရန်</button>
     </div>
 
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="margin:0;">နှစ်ချုပ်ဇယား (Yearly)</h3>
-            <button class="btn btn-s" style="width:120px;" onclick="printYearly()">
-                <span class="material-icons">print</span> PRINT
-            </button>
-        </div>
-        <div id="yearly-table-div">
-            <table>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+        <button class="btn btn-p" id="tab-m" onclick="switchTab('m')">လချုပ်</button>
+        <button class="btn" id="tab-y" style="background:#cbd5e1; color:#475569;" onclick="switchTab('y')">နှစ်ချုပ်</button>
+        <button class="btn" style="background:#6366f1;" onclick="openFullSheet()">ဇယားကွက်</button>
+    </div>
+
+    <div id="view-m">
+        <div class="card" style="overflow-x:auto;">
+            <h3 id="m-label" style="color:var(--primary); margin-top:0;">Monthly Report</h3>
+            <table id="m-table">
                 <thead>
-                    <tr><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
+                    <tr><th rowspan="2" class="dr-name">Doctor</th><th colspan="2">W</th><th colspan="2">R</th><th rowspan="2">Total</th></tr>
+                    <tr><th>Q</th><th>Amt</th><th>Q</th><th>Amt</th></tr>
                 </thead>
-                <tbody id="yearly-body"></tbody>
+                <tbody id="m-body"></tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="view-y" style="display:none;">
+        <div class="card">
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0;">Yearly Report</h3>
+                <button class="btn btn-s" style="width: 80px;" onclick="printDiv('y-div', 'Yearly Report')">PRINT</button>
+            </div>
+            <div id="y-div">
+                <table>
+                    <thead>
+                        <tr><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Total Amount</th></tr>
+                    </thead>
+                    <tbody id="y-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="entryModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#1e293b; z-index:1000; padding:15px; overflow-y:auto;">
-    <div style="display:flex; justify-content:space-between; color:white; margin-bottom:20px;">
-        <h3>စာရင်းသွင်းခြင်း</h3>
-        <button class="btn btn-s" style="width:80px;" onclick="closeEntry()">DONE</button>
+<div id="entryModal">
+    <div style="position: sticky; top:0; background: #0f172a; padding-bottom:10px; z-index:100;">
+        <div style="display:flex; justify-content:space-between; color:white; align-items:center; margin-bottom:15px;">
+            <h3 id="entryTitle" style="margin:0;"></h3>
+            <button class="btn btn-s" style="width:100px;" onclick="closeEntry()">DONE</button>
+        </div>
+        <input type="text" id="drSearch" placeholder="ရှာဖွေရန်..." oninput="filterDoctors()" style="background:#1e293b; color:white; border:1px solid #334155; text-align:left; padding-left:15px; margin-bottom:0;">
     </div>
+    
     <div id="entryRows"></div>
+
+    <div class="sticky-footer" id="entrySummary">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; text-align:center;">
+            <div>
+                <small>Total Dr</small><br>
+                <b id="sumDr" style="font-size:18px;">0</b>
+            </div>
+            <div>
+                <small>Sum W</small><br>
+                <b id="sumW" style="font-size:18px; color: #38bdf8;">0</b>
+            </div>
+            <div>
+                <small>Sum R</small><br>
+                <b id="sumR" style="font-size:18px; color: #fbbf24;">0</b>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="fullSheetModal" class="full-modal">
+    <div style="padding:15px; background:#1e293b; color:white; display:flex; justify-content:space-between; align-items:center;">
+        <b>Full Breakdown</b>
+        <div style="display:flex; gap:20px;">
+            <span class="material-icons" style="cursor:pointer;" onclick="printDiv('fullSheetTable', 'Full Breakdown')">print</span>
+            <span class="material-icons" onclick="closeModal('fullSheetModal')" style="cursor:pointer;">close</span>
+        </div>
+    </div>
+    <div style="flex:1; overflow:auto; padding:10px;">
+        <table id="fullSheetTable"></table>
+    </div>
+</div>
+
+<div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; padding:20px; z-index:3000; overflow-y:auto;">
+    <h3>Settings</h3>
+    <div class="card" style="background:#f0f9ff;">
+        <p><b>🔐 Accounts</b></p>
+        <input type="text" id="newAdminU" placeholder="Admin Username">
+        <input type="text" id="newAdminP" placeholder="Admin Password">
+        <input type="text" id="newUserU" placeholder="User Username">
+        <input type="text" id="newUserP" placeholder="User Password">
+        <button class="btn btn-p" onclick="updateAccounts()">Update Accounts</button>
+    </div>
+    <div class="card">
+        <p><b>💰 Rates</b></p>
+        W: <input type="number" id="rateW">
+        R: <input type="number" id="rateR">
+        <button class="btn btn-p" onclick="saveConfig()">Save Rates</button>
+    </div>
+    <div class="card">
+        <p><b>👨‍⚕️ Doctors</b></p>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="newDr" placeholder="Doctor Name">
+            <button class="btn btn-p" style="width:70px;" onclick="addDr()">ADD</button>
+        </div>
+        <div id="drManagerList"></div>
+    </div>
+    <button class="btn btn-d" onclick="closeModal('settingsModal')">CLOSE</button>
 </div>
 
 <script type="module">
@@ -103,98 +192,192 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let doctors = ["Doctor W", "Doctor R", "Staff A", "Staff B"]; // ဆရာဝန်စာရင်း နမူနာ
+    let doctors = [];
     let database = {};
-    let rates = { w: 2500, r: 2000 };
+    let config = { admin_u: 'admin', admin_p: '9999', user_u: 'user', user_p: '1234', w_rate: 2500, r_rate: 2000 };
 
     window.doLogin = () => {
-        if(document.getElementById('passIn').value === "1234") {
-            document.getElementById('login-screen').style.display='none';
-            document.getElementById('app-body').style.display='block';
-            startSync();
-        } else { alert("Wrong Password!"); }
+        const u = document.getElementById('userIn').value;
+        const p = document.getElementById('passIn').value;
+        if(u === config.admin_u && p === config.admin_p) { sessionStorage.setItem('role', 'admin'); launchApp(); }
+        else if(u === config.user_u && p === config.user_p) { sessionStorage.setItem('role', 'user'); launchApp(); }
+        else { document.getElementById('loginErr').innerText = "Incorrect!"; }
     };
+
+    function launchApp() {
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app-body').style.display='block';
+        document.getElementById('display-u').innerText = "Account: " + (sessionStorage.getItem('role'));
+        if(sessionStorage.getItem('role') === 'admin') document.getElementById('admin-gear').style.display = 'block';
+        
+        const mArr = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        document.getElementById('monthIn').innerHTML = mArr.map(m => `<option value="${m}">${m}</option>`).join('');
+        document.getElementById('monthIn').selectedIndex = new Date().getMonth();
+        document.getElementById('dayIn').value = new Date().getDate();
+        document.getElementById('yearIn').value = new Date().getFullYear();
+        startSync();
+    }
 
     function startSync() {
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
-                database = snapshot.data().db || {};
-                doctors = snapshot.data().drs || doctors;
-                updateYearlyUI();
+                const data = snapshot.data();
+                database = data.db || {};
+                config = data.cfg || config;
+                doctors = data.drs || [];
+                updateUI();
+                document.getElementById('newAdminU').value = config.admin_u;
+                document.getElementById('newAdminP').value = config.admin_p;
+                document.getElementById('newUserU').value = config.user_u;
+                document.getElementById('newUserP').value = config.user_p;
+                document.getElementById('rateW').value = config.w_rate;
+                document.getElementById('rateR').value = config.r_rate;
             }
         });
     }
 
-    async function saveData() {
-        await setDoc(doc(db, "xray_system", "main_data"), { db: database, drs: doctors });
+    async function pushData() {
+        await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors });
     }
+
+    window.switchTab = (t) => {
+        document.getElementById('view-m').style.display = t === 'm' ? 'block' : 'none';
+        document.getElementById('view-y').style.display = t === 'y' ? 'block' : 'none';
+        document.getElementById('tab-m').style.background = t === 'm' ? '#2563eb' : '#cbd5e1';
+        document.getElementById('tab-y').style.background = t === 'y' ? '#10b981' : '#cbd5e1';
+    };
 
     window.openEntry = () => {
-        const d = document.getElementById('dayIn').value;
-        const m = document.getElementById('monthIn').value;
-        if(!d) return alert("နေ့ရက် ထည့်ပါ");
-        
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value;
+        if(!d || !y) return alert("Fill Day/Year!");
         document.getElementById('entryModal').style.display='block';
-        const dateKey = `${m}_2026`;
-        document.getElementById('entryRows').innerHTML = doctors.map((dr, i) => {
+        document.getElementById('entryTitle').innerText = `${d} ${m} ${y}`;
+        document.getElementById('drSearch').value = "";
+        renderRows(doctors);
+    };
+
+    window.filterDoctors = () => {
+        const q = document.getElementById('drSearch').value.toLowerCase();
+        const filtered = doctors.filter(dr => dr.toLowerCase().includes(q));
+        renderRows(filtered);
+    };
+
+    function renderRows(list) {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        document.getElementById('entryRows').innerHTML = list.map((dr) => {
+            const i = doctors.indexOf(dr);
             const val = (database[dateKey]?.[d]?.[i]) || {w:'', r:''};
-            return `<div class="card" style="margin-bottom:10px;">
-                <p><b>${dr}</b></p>
-                W: <input type="number" id="w-${i}" value="${val.w}" oninput="updateVal(${i})" style="width:60px;">
-                R: <input type="number" id="r-${i}" value="${val.r}" oninput="updateVal(${i})" style="width:60px;">
+            return `<div class="card" style="background:#1e293b; color:white;">
+                <b style="color:var(--secondary);">${dr}</b>
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    W: <input type="number" id="w-${i}" value="${val.w}" oninput="saveRow(${i})" style="background:#0f172a; color:white;">
+                    R: <input type="number" id="r-${i}" value="${val.r}" oninput="saveRow(${i})" style="background:#0f172a; color:white;">
+                </div>
             </div>`;
         }).join('');
-    };
-
-    window.updateVal = (i) => {
-        const d = document.getElementById('dayIn').value;
-        const m = document.getElementById('monthIn').value;
-        const dateKey = `${m}_2026`;
-        if(!database[dateKey]) database[dateKey] = {};
-        if(!database[dateKey][d]) database[dateKey][d] = {};
-        database[dateKey][d][i] = {
-            w: document.getElementById(`w-${i}`).value,
-            r: document.getElementById(`r-${i}`).value
-        };
-    };
-
-    window.closeEntry = async () => {
-        document.getElementById('entryModal').style.display='none';
-        await saveData();
-    };
-
-    function updateYearlyUI() {
-        let html = "";
-        doctors.forEach((dr, i) => {
-            let tw = 0, tr = 0;
-            Object.values(database).forEach(monthData => {
-                Object.values(monthData).forEach(dayData => {
-                    if(dayData[i]) {
-                        tw += (Number(dayData[i].w) || 0);
-                        tr += (Number(dayData[i].r) || 0);
-                    }
-                });
-            });
-            const total = (tw * rates.w) + (tr * rates.r);
-            if(tw > 0 || tr > 0) {
-                html += `<tr><td class="dr-col">${dr}</td><td>${tw}</td><td>${tr}</td><td>${total.toLocaleString()}</td></tr>`;
-            }
-        });
-        document.getElementById('yearly-body').innerHTML = html;
+        updateEntrySummary();
     }
 
-    window.printYearly = () => {
-        const content = document.getElementById('yearly-table-div').innerHTML;
-        const year = new Date().getFullYear();
-        document.getElementById('print-area').innerHTML = `<h2>Yearly Summary Report (${year})</h2>` + content;
+    window.saveRow = (i) => {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        if(!database[dateKey]) database[dateKey] = {}; if(!database[dateKey][d]) database[dateKey][d] = {};
+        database[dateKey][d][i] = { w: document.getElementById(`w-${i}`).value, r: document.getElementById(`r-${i}`).value };
+        updateEntrySummary();
+    };
+
+    function updateEntrySummary() {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        let tw = 0, tr = 0, count = 0;
+        if(database[dateKey]?.[d]) {
+            Object.values(database[dateKey][d]).forEach(val => {
+                if(val.w || val.r) {
+                    tw += (+val.w || 0);
+                    tr += (+val.r || 0);
+                    count++;
+                }
+            });
+        }
+        document.getElementById('sumDr').innerText = count;
+        document.getElementById('sumW').innerText = tw;
+        document.getElementById('sumR').innerText = tr;
+    }
+
+    window.closeEntry = async () => { document.getElementById('entryModal').style.display='none'; await pushData(); updateUI(); };
+
+    window.updateUI = () => {
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        document.getElementById('m-label').innerText = `${m} ${y} Report`;
+        let mH = "", yH = "";
+        doctors.forEach((dr, i) => {
+            let mw = 0, mr = 0;
+            if(database[dateKey]) Object.values(database[dateKey]).forEach(day => { if(day[i]) { mw += (+day[i].w||0); mr += (+day[i].r||0); } });
+            if(mw || mr) mH += `<tr><td class="dr-name">${dr}</td><td>${mw}</td><td>${(mw*config.w_rate)}</td><td>${mr}</td><td>${(mr*config.r_rate)}</td><td>${(mw*config.w_rate+mr*config.r_rate)}</td></tr>`;
+            
+            let yw = 0, yr = 0;
+            Object.keys(database).forEach(key => { if(key.endsWith(y)) { Object.values(database[key]).forEach(day => { if(day[i]) { yw += (+day[i].w||0); yr += (+day[i].r||0); } }); } });
+            if(yw || yr) yH += `<tr><td class="dr-name">${dr}</td><td>${yw}</td><td>${yr}</td><td>${(yw*config.w_rate+yr*config.r_rate)}</td></tr>`;
+        });
+        document.getElementById('m-body').innerHTML = mH; document.getElementById('y-body').innerHTML = yH;
+    };
+
+    window.openFullSheet = () => {
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        let h = `<tr><th class="dr-name">Doctor</th>`;
+        for(let d=1; d<=31; d++) h += `<th colspan="2">D${d}</th>`;
+        h += `</tr><tr><th></th>`;
+        for(let d=1; d<=31; d++) h += `<th style="font-size:9px">W</th><th style="font-size:9px">R</th>`;
+        h += `</tr>`;
+        let b = doctors.map((dr, i) => {
+            let r = `<td class="dr-name">${dr}</td>`;
+            for(let d=1; d<=31; d++) {
+                let w = database[dateKey]?.[d]?.[i]?.w || '-';
+                let rv = database[dateKey]?.[d]?.[i]?.r || '-';
+                r += `<td>${w}</td><td>${rv}</td>`;
+            }
+            return `<tr>${r}</tr>`;
+        }).join('');
+        document.getElementById('fullSheetTable').innerHTML = h + b;
+        document.getElementById('fullSheetModal').style.display = 'flex';
+    };
+
+    window.printDiv = (id, title) => {
+        const content = document.getElementById(id).innerHTML;
+        document.getElementById('print-area').innerHTML = `<h2 style="text-align:center;">${title}</h2>` + content;
         window.print();
     };
 
-    window.onload = () => {
-        document.getElementById('monthIn').value = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][new Date().getMonth()];
-        document.getElementById('dayIn').value = new Date().getDate();
+    window.addDr = async () => {
+        const n = document.getElementById('newDr').value;
+        if(n) { doctors.push(n); await pushData(); document.getElementById('newDr').value=''; renderDrMgr(); }
     };
-</script>
 
+    window.removeDr = async (i) => { if(confirm("Delete?")) { doctors.splice(i,1); await pushData(); renderDrMgr(); } };
+
+    window.updateAccounts = async () => {
+        config.admin_u = document.getElementById('newAdminU').value;
+        config.admin_p = document.getElementById('newAdminP').value;
+        config.user_u = document.getElementById('newUserU').value;
+        config.user_p = document.getElementById('newUserP').value;
+        await pushData(); alert("Account Settings Saved!");
+    };
+
+    window.saveConfig = async () => {
+        config.w_rate = Number(document.getElementById('rateW').value);
+        config.r_rate = Number(document.getElementById('rateR').value);
+        await pushData(); alert("Rates Saved!");
+    };
+
+    function renderDrMgr() {
+        document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
+            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;">
+                ${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="removeDr(${i})">delete</span>
+            </div>`).join('');
+    }
+
+    window.openModal = (id) => { document.getElementById(id).style.display='block'; if(id==='settingsModal') renderDrMgr(); };
+    window.closeModal = (id) => document.getElementById(id).style.display='none';
+    document.getElementById('monthIn').onchange = updateUI;
+    document.getElementById('yearIn').onchange = updateUI;
+</script>
 </body>
 </html>
