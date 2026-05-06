@@ -39,7 +39,6 @@
         .modal-header { padding: 15px; background: #1e293b; color: white; display: flex; justify-content: space-between; align-items: center; }
         .modal-content { flex: 1; overflow: auto; padding: 10px; }
 
-        /* Mobile Input Style */
         .search-container { position: relative; margin-bottom: 15px; }
         .search-container .material-icons { position: absolute; left: 12px; top: 13px; color: #94a3b8; }
         .search-input { text-align: left !important; padding-left: 45px !important; background: #0f172a !important; color: white !important; border: 1px solid #475569 !important; }
@@ -61,28 +60,16 @@
         .sheet-table td { font-size: 11px; padding: 5px; min-width: 35px; }
         .day-col { background: #f1f5f9; color: #475569; }
 
-        /* --- PRINT FIX: အဖြူရောင်မဖြစ်စေရန် ပြင်ဆင်ချက် --- */
+        /* Print Settings */
         @media print {
-            body { background: white; margin: 0; padding: 0; overflow: visible !important; }
-            #login-screen, #sync-status, .material-icons, .btn, .selection-row, #admin-gear, #logoutBtn, .modal-header, #entryModal, #settingsModal { display: none !important; }
-            
-            #app-body { display: block !important; }
-            .card { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; overflow: visible !important; }
-
-            /* Tab ဖွင့်ထားတဲ့ နေရာကလွဲရင် အကုန်ဖျောက်မယ် */
-            #app-body > *:not(.printable-card) { display: none !important; }
-            #view-m:not([style*="display: block"]), #view-y:not([style*="display: block"]) { display: none !important; }
-
-            /* Modal Print Fix */
-            .full-modal { position: relative !important; display: block !important; width: 100% !important; height: auto !important; overflow: visible !important; }
-            .modal-content { overflow: visible !important; padding: 0 !important; }
-            
-            table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: auto !important; }
-            th, td { border: 1px solid black !important; color: black !important; padding: 4px !important; }
-            .dr-name { position: static !important; background: white !important; }
-            
-            /* Landscape format automatically when printing wide tables */
-            @page { size: auto; margin: 5mm; }
+            body * { visibility: hidden; }
+            #view-m, #view-m *, #view-y, #view-y *, #fullSheetModal, #fullSheetModal * { visibility: visible; }
+            #fullSheetModal { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            .btn, #sync-status, .material-icons, .selection-row, #admin-gear, #logoutBtn, .modal-header span { display: none !important; }
+            .card { box-shadow: none; border: 1px solid #ccc; margin: 0; padding: 10px; }
+            table { font-size: 10px; width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid black !important; color: black !important; }
+            .dr-name { position: static; background: white !important; }
         }
     </style>
 </head>
@@ -109,13 +96,14 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
         <button class="btn btn-p" id="tab-m" onclick="switchTab('m')">လချုပ်</button>
         <button class="btn" id="tab-y" style="background:#cbd5e1; color:#475569;" onclick="switchTab('y')">နှစ်ချုပ်</button>
         <button class="btn btn-w" onclick="openFullSheet()"><span class="material-icons">grid_on</span> ဇယား</button>
+        <button class="btn" style="background:#475569;" onclick="window.printReport()"><span class="material-icons">print</span> Print</button>
     </div>
 
-    <div id="view-m" style="display: block;">
+    <div id="view-m">
         <div class="card">
             <div class="selection-row">
                 <input type="number" id="dayIn" placeholder="Day">
@@ -129,13 +117,8 @@
             </button>
         </div>
 
-        <div class="card printable-card" id="m-report-card">
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="color:var(--primary); margin:0;" id="m-title">Monthly Report</h3>
-                <button class="btn" style="width: 100px; height: 35px; background: #475569; font-size: 12px;" onclick="window.print()">
-                    <span class="material-icons" style="font-size:16px;">print</span> PRINT
-                </button>
-            </div>
+        <div class="card">
+            <h3 style="text-align: center; color:var(--primary); margin-top:0;" id="m-title">Monthly Report</h3>
             <div style="overflow-x:auto;">
                 <table id="main-report-table">
                     <thead>
@@ -148,29 +131,22 @@
         </div>
     </div>
 
-    <div id="view-y" style="display:none;">
-        <div class="card printable-card" id="y-report-card">
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="color:var(--secondary); margin:0;" id="y-title">Yearly Summary</h3>
-                <button class="btn" style="width: 100px; height: 35px; background: #475569; font-size: 12px;" onclick="window.print()">
-                    <span class="material-icons" style="font-size:16px;">print</span> PRINT
-                </button>
-            </div>
-            <table>
-                <thead>
-                    <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W</th><th>R</th><th>Total (Ks)</th></tr>
-                </thead>
-                <tbody id="y-table-body"></tbody>
-            </table>
-        </div>
+    <div id="view-y" style="display:none;" class="card">
+        <h3 style="text-align: center; color:var(--secondary);">Yearly Summary</h3>
+        <table>
+            <thead>
+                <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W</th><th>R</th><th>Total (Ks)</th></tr>
+            </thead>
+            <tbody id="y-table-body"></tbody>
+        </table>
     </div>
 </div>
 
-<div id="fullSheetModal" class="full-modal">
+<div id="fullSheetModal" class="full-modal" style="display: none;">
     <div class="modal-header">
         <b id="fullSheetTitle">Full Monthly Sheet</b>
         <div style="display:flex; gap:15px;">
-            <span class="material-icons" style="cursor:pointer;" onclick="window.print()">print</span>
+            <span class="material-icons" style="cursor:pointer;" onclick="window.printReport()">print</span>
             <span class="material-icons" style="cursor:pointer;" onclick="closeFullSheet()">close</span>
         </div>
     </div>
@@ -195,7 +171,9 @@
         <div>W Total <b id="d-w">0</b></div>
         <div>R Total <b id="d-r">0</b></div>
         <div>Day Total <b id="d-all" style="color:#10b981;">0</b></div>
-        <div class="dr-count-box">ယနေ့ ဆရာဝန်အရေအတွက်: <span id="dr-active-count" style="color:white; font-size:18px;">0</span> ဦး</div>
+        <div class="dr-count-box">
+            ယနေ့ ဆရာဝန်အရေအတွက်: <span id="dr-active-count" style="color:white; font-size:18px;">0</span> ဦး
+        </div>
     </div>
 </div>
 
@@ -263,6 +241,7 @@
                 updateUI();
                 document.getElementById('sync-status').innerText = "Cloud Synced ✓";
                 document.getElementById('sync-status').style.color = "#10b981";
+                
                 document.getElementById('newAdminU').value = config.admin_user;
                 document.getElementById('newAdminP').value = config.admin_pass;
                 document.getElementById('newUserU').value = config.user_user;
@@ -368,8 +347,10 @@
         let tw = 0, tr = 0, activeDr = 0;
         const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
         doctors.forEach((_, i) => {
-            const wVal = database[dateKey]?.[d]?.[i]?.w || "";
-            const rVal = database[dateKey]?.[d]?.[i]?.r || "";
+            const wIn = document.getElementById(`w-${i}`);
+            const rIn = document.getElementById(`r-${i}`);
+            let wVal = wIn ? wIn.value : (database[dateKey]?.[d]?.[i]?.w || "");
+            let rVal = rIn ? rIn.value : (database[dateKey]?.[d]?.[i]?.r || "");
             tw += (+wVal || 0); tr += (+rVal || 0);
             if((+wVal > 0) || (+rVal > 0)) activeDr++;
         });
@@ -382,9 +363,9 @@
         document.getElementById('fullSheetTitle').innerText = `${m} ${y} Full Breakdown`;
         
         let head = `<tr><th class="dr-name">Doctor Name</th>`;
-        for(let d=1; d<=31; d++) head += `<th colspan="2">D-${d}</th>`;
+        for(let d=1; d<=31; d++) head += `<th colspan="2">Day ${d}</th>`;
         head += `<th colspan="2" style="background:#059669">TOTAL</th></tr><tr><th class="dr-name"></th>`;
-        for(let d=1; d<=32; d++) head += `<th style="font-size:8px">W</th><th style="font-size:8px">R</th>`;
+        for(let d=1; d<=32; d++) head += `<th style="font-size:9px">W</th><th style="font-size:9px">R</th>`;
         head += `</tr>`;
 
         let body = "";
@@ -401,10 +382,22 @@
         });
 
         document.getElementById('fullSheetTable').innerHTML = head + body;
-        document.getElementById('fullSheetModal').style.display = 'block';
+        document.getElementById('fullSheetModal').style.display = 'flex';
     };
 
     window.closeFullSheet = () => { document.getElementById('fullSheetModal').style.display = 'none'; };
+
+    window.printReport = () => {
+        const isSheetOpen = document.getElementById('fullSheetModal').style.display === 'flex';
+        if (!isSheetOpen) {
+            const isYearly = document.getElementById('view-y').style.display === 'block';
+            document.title = isYearly ? "Yearly_Report" : "Monthly_Report";
+        } else {
+            document.title = "Full_Sheet_Report";
+        }
+        window.print();
+        document.title = "X-ray Pro - Stable Cloud";
+    };
 
     function updateUI() {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
