@@ -60,15 +60,25 @@
         .sheet-table td { font-size: 11px; padding: 5px; min-width: 35px; }
         .day-col { background: #f1f5f9; color: #475569; }
 
-        /* --- PRINT CSS အသစ် --- */
+        /* --- PRINT CSS CONFIGURATION --- */
         @media print {
-            body * { visibility: hidden; }
-            #app-body, #app-body *, #fullSheetModal, #fullSheetModal * { visibility: visible; }
-            #fullSheetModal { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-            .btn, #sync-status, .material-icons, .selection-row, #admin-gear, #logoutBtn, .modal-header span { display: none !important; }
-            #view-m, #view-y { position: absolute; top: 0; left: 0; width: 100%; }
-            .card { box-shadow: none; border: 1px solid #000; margin-bottom: 20px; padding: 10px; }
-            table { width: 100%; border-collapse: collapse; font-size: 10px; }
+            body { background: white; padding: 0; }
+            #login-screen, #sync-status, .material-icons, .btn, .selection-row, #admin-gear, #logoutBtn, .modal-header span, #entryModal, #settingsModal { display: none !important; }
+            
+            /* Hide non-printable items inside app-body */
+            #app-body .card:not(.printable-card) { display: none !important; }
+            
+            /* Force show the selected view */
+            .printable-card { 
+                position: absolute; top: 0; left: 0; width: 100% !important; 
+                display: block !important; border: 1px solid #000 !important; box-shadow: none !important; padding: 10px !important; 
+            }
+            
+            #fullSheetModal { position: absolute; top: 0; left: 0; width: 100% !important; display: block !important; background: white; }
+            #fullSheetModal .modal-header { border-bottom: 2px solid black; }
+            #fullSheetModal .modal-content { overflow: visible !important; }
+
+            table { width: 100%; border-collapse: collapse; font-size: 9px; }
             th, td { border: 1px solid black !important; color: black !important; }
             .dr-name { position: static; background: white !important; }
         }
@@ -97,11 +107,10 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
         <button class="btn btn-p" id="tab-m" onclick="switchTab('m')">လချုပ်</button>
         <button class="btn" id="tab-y" style="background:#cbd5e1; color:#475569;" onclick="switchTab('y')">နှစ်ချုပ်</button>
         <button class="btn btn-w" onclick="openFullSheet()"><span class="material-icons">grid_on</span> ဇယား</button>
-        <button class="btn" style="background:#475569;" onclick="window.printReport()"><span class="material-icons">print</span> PRINT</button>
     </div>
 
     <div id="view-m">
@@ -118,8 +127,13 @@
             </button>
         </div>
 
-        <div class="card">
-            <h3 style="text-align: center; color:var(--primary); margin-top:0;" id="m-title">Monthly Report</h3>
+        <div class="card printable-card" id="m-report-card">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="color:var(--primary); margin:0;" id="m-title">Monthly Report</h3>
+                <button class="btn" style="width: 100px; height: 35px; background: #475569; font-size: 12px;" onclick="window.printReport('view-m')">
+                    <span class="material-icons" style="font-size:16px;">print</span> PRINT
+                </button>
+            </div>
             <div style="overflow-x:auto;">
                 <table id="main-report-table">
                     <thead>
@@ -133,9 +147,14 @@
     </div>
 
     <div id="view-y" style="display:none;">
-        <div class="card">
-            <h3 style="text-align: center; color:var(--secondary);">Yearly Summary</h3>
-            <table>
+        <div class="card printable-card" id="y-report-card">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color:var(--secondary); margin:0;" id="y-title">Yearly Summary</h3>
+                <button class="btn" style="width: 100px; height: 35px; background: #475569; font-size: 12px;" onclick="window.printReport('view-y')">
+                    <span class="material-icons" style="font-size:16px;">print</span> PRINT
+                </button>
+            </div>
+            <table id="year-table">
                 <thead>
                     <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W</th><th>R</th><th>Total (Ks)</th></tr>
                 </thead>
@@ -149,7 +168,7 @@
     <div class="modal-header">
         <b id="fullSheetTitle">Full Monthly Sheet</b>
         <div style="display:flex; gap:15px;">
-            <span class="material-icons" style="cursor:pointer;" onclick="window.printReport()">print</span>
+            <span class="material-icons" style="cursor:pointer;" onclick="window.print()">print</span>
             <span class="material-icons" style="cursor:pointer;" onclick="closeFullSheet()">close</span>
         </div>
     </div>
@@ -234,6 +253,7 @@
     let database = {};
     let config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
 
+    // Sync from Firestore
     function startSync() {
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
@@ -242,9 +262,11 @@
                 config = data.cfg || config;
                 doctors = data.drs || [];
                 updateUI();
+                
                 document.getElementById('sync-status').innerText = "Cloud Synced ✓";
                 document.getElementById('sync-status').style.color = "#10b981";
                 
+                // Update settings fields
                 document.getElementById('newAdminU').value = config.admin_user;
                 document.getElementById('newAdminP').value = config.admin_pass;
                 document.getElementById('newUserU').value = config.user_user;
@@ -263,6 +285,7 @@
         } catch(e) { alert("Data Sync Failed!"); }
     }
 
+    // Login Logic
     window.doLogin = () => {
         const u = document.getElementById('userIn').value, p = document.getElementById('passIn').value;
         if(u === config.admin_user && p === config.admin_pass) { sessionStorage.setItem('role', 'admin'); initApp(); }
@@ -304,6 +327,7 @@
         startSync();
     }
 
+    // Tabs switching
     window.switchTab = (t) => {
         document.getElementById('view-m').style.display = t === 'm' ? 'block' : 'none';
         document.getElementById('view-y').style.display = t === 'y' ? 'block' : 'none';
@@ -312,6 +336,7 @@
         updateUI();
     };
 
+    // Entry Sheet Rendering
     window.openEntry = () => {
         const d = document.getElementById('dayIn').value;
         if(!d) return alert("Enter Day!");
@@ -350,10 +375,8 @@
         let tw = 0, tr = 0, activeDr = 0;
         const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
         doctors.forEach((_, i) => {
-            const wIn = document.getElementById(`w-${i}`);
-            const rIn = document.getElementById(`r-${i}`);
-            let wVal = wIn ? wIn.value : (database[dateKey]?.[d]?.[i]?.w || "");
-            let rVal = rIn ? rIn.value : (database[dateKey]?.[d]?.[i]?.r || "");
+            const wVal = database[dateKey]?.[d]?.[i]?.w || "";
+            const rVal = database[dateKey]?.[d]?.[i]?.r || "";
             tw += (+wVal || 0); tr += (+rVal || 0);
             if((+wVal > 0) || (+rVal > 0)) activeDr++;
         });
@@ -361,14 +384,15 @@
         document.getElementById('d-all').innerText = tw + tr; document.getElementById('dr-active-count').innerText = activeDr;
     }
 
+    // Full Breakdown Table
     window.openFullSheet = () => {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
         document.getElementById('fullSheetTitle').innerText = `${m} ${y} Full Breakdown`;
         
         let head = `<tr><th class="dr-name">Doctor Name</th>`;
-        for(let d=1; d<=31; d++) head += `<th colspan="2">Day ${d}</th>`;
+        for(let d=1; d<=31; d++) head += `<th colspan="2">D-${d}</th>`;
         head += `<th colspan="2" style="background:#059669">TOTAL</th></tr><tr><th class="dr-name"></th>`;
-        for(let d=1; d<=32; d++) head += `<th style="font-size:9px">W</th><th style="font-size:9px">R</th>`;
+        for(let d=1; d<=32; d++) head += `<th style="font-size:8px">W</th><th style="font-size:8px">R</th>`;
         head += `</tr>`;
 
         let body = "";
@@ -390,46 +414,52 @@
 
     window.closeFullSheet = () => { document.getElementById('fullSheetModal').style.display = 'none'; };
 
-    // --- PRINT FUNCTION အသစ် (လချုပ်/နှစ်ချုပ်/ဇယား အကုန်ရသည်) ---
-    window.printReport = () => {
-        const isSheetOpen = document.getElementById('fullSheetModal').style.display === 'flex';
-        if (!isSheetOpen) {
-            const isYearly = document.getElementById('view-y').style.display === 'block';
-            document.title = isYearly ? "Yearly_Report" : "Monthly_Report";
-        } else {
-            document.title = "Full_Sheet_Report";
-        }
+    // Separate Print Functionality
+    window.printReport = (viewId) => {
+        const m = document.getElementById('monthIn').value;
+        const y = document.getElementById('yearIn').value;
+        // Set filename based on view
+        document.title = (viewId === 'view-m') ? `Monthly_Report_${m}_${y}` : `Yearly_Report_${y}`;
         window.print();
         document.title = "X-ray Pro - Stable Cloud";
     };
 
+    // Main UI Reports update
     function updateUI() {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
         document.getElementById('m-title').innerText = `${m} ${y} Report`;
+        document.getElementById('y-title').innerText = `${y} Yearly Summary`;
+
         let mBody = "", yBody = "";
         doctors.forEach((dr, i) => {
+            // Monthly Logic
             let wQ = 0, rQ = 0;
             if(database[dateKey]) Object.values(database[dateKey]).forEach(day => { if(day[i]){ wQ += (+day[i].w||0); rQ += (+day[i].r||0); } });
             if(wQ || rQ) {
                 let total = (wQ * config.w_rate) + (rQ * config.r_rate);
                 mBody += `<tr><td class="dr-name">${dr}</td><td>${wQ}</td><td>${(wQ*config.w_rate).toLocaleString()}</td><td>${rQ}</td><td>${(rQ*config.r_rate).toLocaleString()}</td><td style="color:#2563eb;">${total.toLocaleString()}</td></tr>`;
             }
+            // Yearly Logic
             let tw = 0, tr = 0;
             Object.keys(database).forEach(key => { if(key.endsWith(y)) { Object.values(database[key]).forEach(day => { if(day[i]){ tw += (+day[i].w||0); tr += (+day[i].r||0); } }); } });
             if(tw || tr) yBody += `<tr><td class="dr-name">${dr}</td><td>${tw}</td><td>${tr}</td><td style="color:#059669;">${((tw*config.w_rate)+(tr*config.r_rate)).toLocaleString()}</td></tr>`;
         });
-        document.getElementById('m-table-body').innerHTML = mBody; document.getElementById('y-table-body').innerHTML = yBody;
+        document.getElementById('m-table-body').innerHTML = mBody; 
+        document.getElementById('y-table-body').innerHTML = yBody;
     }
 
+    // Modal Helpers
     window.openModal = (id) => { document.getElementById(id).style.display='block'; if(id==='settingsModal') renderDrMgr(); };
     window.closeModal = (id) => { document.getElementById(id).style.display='none'; };
     function renderDrMgr() { document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;">${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="window.removeDr(${i})">delete</span></div>`).join(''); }
 
+    // Event Listeners
     document.getElementById('loginBtn').onclick = window.doLogin;
     document.getElementById('logoutBtn').onclick = () => { sessionStorage.clear(); location.reload(); };
     document.getElementById('doneBtn').onclick = async () => { window.closeModal('entryModal'); await pushData(); };
     document.getElementById('monthIn').onchange = updateUI;
     document.getElementById('yearIn').oninput = updateUI;
+    
     window.onload = () => { if(sessionStorage.getItem('role')) initApp(); };
 </script>
 </body>
