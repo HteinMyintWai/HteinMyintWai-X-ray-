@@ -3,199 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>X-ray Pro - Stable Cloud</title>
+    <title>X-Ray Pro Master 2026</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root { 
-            --primary: #2563eb; --secondary: #065f46; --danger: #991b1b;
-            --entry-bg: #1e293b; --bg: #f8fafc;
+            --primary: #2563eb; --secondary: #059669; --danger: #ef4444;
+            --entry-bg: #0f172a; --bg: #f1f5f9; --accent: #38bdf8;
+            --online: #22c55e; --offline: #ef4444;
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); margin: 0; padding: 12px; color: #1e293b; }
+        body { background: var(--bg); margin: 0; padding: 10px; color: #1e293b; }
         
-        .card { background: white; border-radius: 18px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        .btn { border: none; padding: 15px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; width: 100%; }
-        .btn-p { background: var(--primary); } .btn-s { background: #10b981; } .btn-d { background: #ef4444; } .btn-w { background: #6366f1; }
+        .status-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #1e293b; color: white; border-radius: 12px 12px 0 0; font-size: 12px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online-dot { background-color: var(--online); box-shadow: 0 0 8px var(--online); }
+        .offline-dot { background-color: var(--offline); box-shadow: 0 0 8px var(--offline); }
+
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .btn { border: none; padding: 10px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; transition: 0.2s; }
+        .btn-p { background: var(--primary); } .btn-s { background: var(--secondary); } .btn-d { background: var(--danger); } .btn-w { background: #6366f1; }
+        .btn-print { background: #475569; margin-top: 10px; width: 100%; }
+
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-size: 15px; outline: none; margin-bottom: 8px; }
         
-        .selection-row { display: grid; grid-template-columns: 1fr 2.5fr; gap: 12px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th { background: #334155; color: white; padding: 8px 2px; border: 1px solid #1e293b; }
+        td { padding: 8px 2px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; background: white; }
+        .dr-name { text-align: left; padding-left: 8px; color: var(--primary); background: #f8fafc; }
 
-        input, select { 
-            width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; 
-            text-align: center; font-size: 17px; font-weight: 600; color: #334155; 
-            outline: none; background-color: #fdfdfd; -webkit-appearance: none; appearance: none;
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; overflow-y: auto; padding: 15px; }
+        #entryModal { background: var(--entry-bg); color: white; }
+        .entry-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; background: #1e293b; padding: 12px; border-radius: 10px; border: 1px solid #334155; }
+        .entry-row input { margin: 0; background: #020617; color: var(--accent); border: 1px solid #334155; }
+        
+        .entry-footer { position: sticky; bottom: -15px; background: #020617; margin: 15px -15px -15px -15px; padding: 15px; border-top: 3px solid var(--accent); text-align: center; }
+        .active-badge { background: var(--accent); color: #020617; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; margin-top: 5px; display: inline-block; }
+
+        .sheet-table th, .sheet-table td { min-width: 45px; border: 1px solid #ddd; padding: 5px; font-size: 10px; }
+        .sticky-col { position: sticky; left: 0; background: #eee !important; z-index: 5; }
+
+        #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* Print Style */
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .btn-print, .btn, .status-bar, .no-print { display: none !important; }
+            table { font-size: 12px !important; width: 100% !important; }
+            th { background: #eee !important; color: black !important; }
         }
-
-        .month-box {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat; background-position: right 15px center; background-size: 16px;
-        }
-
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        th { background: #334155; color: white; padding: 10px 5px; border: 1px solid #1e293b; white-space: nowrap; }
-        td { padding: 10px 5px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; }
-        .dr-name { text-align: left; padding-left: 12px; background: #f8fafc; color: var(--primary); position: sticky; left: 0; z-index: 5; }
-
-        /* Modal Styles */
-        .full-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 4000; overflow: hidden; display: flex; flex-direction: column; }
-        .modal-header { padding: 15px; background: #1e293b; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .modal-content { flex: 1; overflow: auto; padding: 10px; }
-
-        .search-container { position: relative; margin-bottom: 15px; }
-        .search-container .material-icons { position: absolute; left: 12px; top: 13px; color: #94a3b8; }
-        .search-input { text-align: left !important; padding-left: 45px !important; background: #0f172a !important; color: white !important; border: 1px solid #475569 !important; }
-
-        #entryModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--entry-bg); z-index: 1000; overflow-y: auto; padding: 15px; }
-        .entry-row { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; margin-bottom: 12px; background: #334155; padding: 12px; border-radius: 15px; border: 1px solid #475569; }
-        .dr-tag { color: #f1f5f9; font-size: 14px; font-weight: 700; border-left: 4px solid #38bdf8; padding-left: 8px; }
-        .entry-row input { background: #0f172a; color: #38bdf8; border: 1px solid #475569; font-size: 20px; margin-bottom: 0; }
-
-        .entry-footer { position: sticky; bottom: -15px; background: #0f172a; color: white; margin: 20px -15px -15px -15px; padding: 15px 20px 25px 20px; border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; border-top: 2px solid #38bdf8; gap: 5px; }
-        .entry-footer div { font-size: 11px; color: #94a3b8; }
-        .entry-footer b { font-size: 18px; color: #38bdf8; display: block; margin-top: 4px; }
-        .dr-count-box { grid-column: 1 / span 3; margin-top: 8px; padding-top: 8px; border-top: 1px solid #475569; font-size: 15px; color: #fbbf24; font-weight: bold; }
-
-        #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        #sync-status { font-size: 11px; text-align: center; color: #64748b; font-weight: bold; padding: 5px; }
-
-        /* Full Sheet Table Specific */
-        .sheet-table th { font-size: 11px; padding: 5px; }
-        .sheet-table td { font-size: 11px; padding: 5px; min-width: 35px; }
-        .day-col { background: #f1f5f9; color: #475569; }
+        @page { size: auto; margin: 10mm; }
+        .landscape-print { size: landscape; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <div class="card" style="width: 100%; max-width: 320px; text-align: center;">
-        <h2 style="color: #1e293b; margin-top:0;">X-RAY LOGIN</h2>
+    <div class="card" style="width: 90%; max-width: 320px; text-align: center;">
+        <h2 style="color: var(--primary); margin-bottom: 20px;">X-RAY MASTER</h2>
         <input type="text" id="userIn" placeholder="Username">
         <input type="password" id="passIn" placeholder="Password">
-        <button class="btn btn-p" style="margin-top: 15px;" id="loginBtn">SIGN IN</button>
-        <p id="loginErr" style="color:red; font-size: 13px; font-weight: bold; margin-top: 10px;"></p>
+        <button class="btn btn-p" style="width:100%" onclick="doLogin()">SIGN IN</button>
     </div>
 </div>
 
 <div id="app-body" style="display:none;">
-    <div id="sync-status">Connecting to Cloud...</div>
+    <div class="status-bar">
+        <span>PRO SYSTEM (<span id="role-text"></span>)</span>
+        <div><span id="stat-dot" class="status-dot offline-dot"></span> <span id="stat-text">Connecting...</span></div>
+    </div>
     
-    <div class="card" style="display:flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
-        <b style="font-size: 18px; color: var(--primary);">X-ray Pro (<span id="role-text"></span>)</b>
+    <div class="card no-print" style="display:flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-radius: 0 0 12px 12px; border-top: none;">
+        <b>DASHBOARD</b>
         <div style="display:flex; gap: 15px;">
-            <span class="material-icons" id="admin-gear" style="display:none; font-size:28px; cursor:pointer;" onclick="openModal('settingsModal')">settings</span>
-            <span class="material-icons" id="logoutBtn" style="color:var(--danger); font-size:28px; cursor:pointer;">logout</span>
+            <span class="material-icons" id="admin-gear" style="display:none; cursor:pointer;" onclick="openModal('settingsModal')">settings</span>
+            <span class="material-icons" style="color:var(--danger); cursor:pointer;" onclick="location.reload()">logout</span>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
-        <button class="btn btn-p" id="tab-m" onclick="switchTab('m')">လချုပ်</button>
-        <button class="btn" id="tab-y" style="background:#cbd5e1; color:#475569;" onclick="switchTab('y')">နှစ်ချုပ်</button>
-        <button class="btn btn-w" onclick="openFullSheet()"><span class="material-icons">grid_on</span> ဇယား</button>
+    <div class="no-print" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 12px;">
+        <button class="btn btn-p" onclick="switchTab('m')">လချုပ်</button>
+        <button class="btn btn-s" onclick="switchTab('y')">နှစ်ချုပ်</button>
+        <button class="btn btn-w" onclick="openFullSheet()">ဇယားကွက်</button>
     </div>
 
-    <div id="view-m">
-        <div class="card">
-            <div class="selection-row">
-                <input type="number" id="dayIn" placeholder="Day">
-                <div style="display: flex; gap: 5px;">
-                    <select id="monthIn" class="month-box"></select>
-                    <input type="number" id="yearIn" placeholder="Year" style="width: 90px;">
-                </div>
+    <div id="view-m" class="print-area">
+        <div class="card no-print">
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+                <input type="number" id="dayIn">
+                <select id="monthIn"></select>
             </div>
-            <button class="btn btn-p" style="height:55px;" onclick="openEntry()">
-                <span class="material-icons">edit_note</span> စာရင်းသွင်းမည်
-            </button>
+            <input type="number" id="yearIn">
+            <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
         </div>
-
         <div class="card">
-            <h3 style="text-align: center; color:var(--primary); margin-top:0;" id="m-title">Monthly Report</h3>
+            <h3 style="text-align:center; margin-top:0;" class="only-print">Monthly Report - <span id="m-print-label"></span></h3>
             <div style="overflow-x:auto;">
-                <table id="main-report-table">
+                <table id="monthlyTable">
                     <thead>
-                        <tr><th rowspan="2" class="dr-name">Doctor</th><th colspan="2">W</th><th colspan="2">R</th><th rowspan="2">Total</th></tr>
-                        <tr><th>Q</th><th>Amt</th><th>Q</th><th>Amt</th></tr>
+                        <tr><th rowspan="2">Doctor</th><th colspan="2">W (Qty/Amt)</th><th colspan="2">R (Qty/Amt)</th><th rowspan="2">Total</th></tr>
+                        <tr><th>Qty</th><th>Amt</th><th>Qty</th><th>Amt</th></tr>
                     </thead>
                     <tbody id="m-table-body"></tbody>
                 </table>
             </div>
+            <button class="btn btn-print no-print" onclick="window.print()">
+                <span class="material-icons">print</span> လချုပ် PRINT ထုတ်ရန်
+            </button>
         </div>
     </div>
 
-    <div id="view-y" style="display:none;" class="card">
-        <h3 style="text-align: center; color:var(--secondary);">Yearly Summary</h3>
-        <table>
-            <thead>
-                <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W</th><th>R</th><th>Total (Ks)</th></tr>
-            </thead>
-            <tbody id="y-table-body"></tbody>
-        </table>
+    <div id="view-y" style="display:none;" class="card print-area">
+        <h3 style="text-align:center; margin-top:0;">Yearly Summary - <span id="y-label"></span></h3>
+        <div style="overflow-x:auto;">
+            <table id="yearlyTable">
+                <thead>
+                    <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
+                </thead>
+                <tbody id="y-table-body"></tbody>
+            </table>
+        </div>
+        <button class="btn btn-print no-print" onclick="window.print()">
+            <span class="material-icons">print</span> နှစ်ချုပ် PRINT ထုတ်ရန်
+        </button>
     </div>
 </div>
 
-<div id="fullSheetModal" class="full-modal" style="display: none;">
-    <div class="modal-header">
-        <b id="fullSheetTitle">Full Monthly Sheet</b>
-        <span class="material-icons" style="cursor:pointer;" onclick="closeFullSheet()">close</span>
-    </div>
-    <div class="modal-content">
-        <div style="overflow: auto;">
-            <table class="sheet-table" id="fullSheetTable">
-                </table>
+<div id="fullSheetModal" class="modal print-area">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;" class="no-print">
+        <h3 style="margin:0;">Full Monthly Sheet</h3>
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-s" onclick="window.print()"><span class="material-icons">print</span> PRINT</button>
+            <button class="btn btn-d" onclick="closeModal('fullSheetModal')">ပိတ်မည်</button>
         </div>
     </div>
+    <div style="overflow:auto; height: 85vh;">
+        <table id="fullSheetTable" class="sheet-table"></table>
+    </div>
 </div>
 
-<div id="entryModal">
+<div id="entryModal" class="modal">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2 style="color:white; margin:0;">Day <span id="dayLabel" style="color:#38bdf8;"></span></h2>
-        <button class="btn btn-s" style="width:100px; height:45px;" id="doneBtn">DONE</button>
+        <h2 style="margin:0;">Day <span id="dayLabel"></span></h2>
+        <button class="btn btn-s" style="width:80px;" onclick="closeEntry()">သိမ်းမည်</button>
     </div>
-    <div class="search-container">
-        <span class="material-icons">search</span>
-        <input type="text" id="drSearch" class="search-input" placeholder="ဆရာဝန်အမည် ရှာရန်..." oninput="filterDoctors()">
-    </div>
-    <div id="entryRows"></div>
+    <input type="text" id="drSearch" style="text-align:left; padding-left:15px; background:#1e293b; color:white;" placeholder="ဆရာဝန်ရှာရန်..." oninput="filterDoctors()">
+    <div id="entryRows" style="margin-top:10px;"></div>
     <div class="entry-footer">
-        <div>W Total <b id="d-w">0</b></div>
-        <div>R Total <b id="d-r">0</b></div>
-        <div>Day Total <b id="d-all" style="color:#10b981;">0</b></div>
-        <div class="dr-count-box">
-            ယနေ့ ဆရာဝန်အရေအတွက်: <span id="dr-active-count" style="color:white; font-size:18px;">0</span> ဦး
+        <div style="display:flex; justify-content:space-around; font-weight:bold; font-size:14px;">
+            <span>W: <span id="d-w" style="color:var(--accent);">0</span></span>
+            <span>R: <span id="d-r" style="color:var(--accent);">0</span></span>
+            <span>Total: <span id="d-all" style="color:var(--online);">0</span></span>
         </div>
+        <div class="active-badge">ယနေ့ စာရင်းဝင် Dr: <span id="active-dr-count">0</span> ဦး</div>
     </div>
 </div>
 
-<div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; padding:20px; z-index:3000; overflow-y:auto;">
-    <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Cloud Settings</h3>
-    <div class="card" style="background:#f0f9ff;">
-        <p><b>🔑 Credentials</b></p>
-        <div style="margin-bottom:10px;">
-            <small>Admin Account</small>
-            <div style="display:flex; gap:5px;"><input type="text" id="newAdminU"> <input type="text" id="newAdminP"></div>
-            <button class="btn btn-p" onclick="updateCreds('admin')" style="height:35px; font-size:12px; margin-top:5px;">Update Admin</button>
-        </div>
-        <div>
-            <small>User Account</small>
-            <div style="display:flex; gap:5px;"><input type="text" id="newUserU"> <input type="text" id="newUserP"></div>
-            <button class="btn btn-s" onclick="updateCreds('user')" style="height:35px; font-size:12px; margin-top:5px;">Update User</button>
-        </div>
+<div id="settingsModal" class="modal">
+    <div style="border-bottom:2px solid #eee; margin-bottom:15px; padding-bottom:10px; text-align: center;">
+        <h2 style="margin:0; color:var(--primary);">System Update Center</h2>
     </div>
-    <div class="card" style="background:#fff7ed;">
-        <p><b>💰 Rate Settings</b></p>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+    <div class="card" style="border: 1px solid var(--accent);">
+        <p><b>💰 နှုန်းထားများ (Rates)</b></p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div><small>W Rate</small><input type="number" id="rateW"></div>
             <div><small>R Rate</small><input type="number" id="rateR"></div>
         </div>
-        <button class="btn btn-p" onclick="updateRates()" style="margin-top:10px;">Save Rates</button>
+        <button class="btn btn-s" style="width:100%" onclick="updateRates()">UPDATE RATES ONLY</button>
     </div>
-    <div class="card">
-        <p><b>Doctor Management</b></p>
-        <div style="display:flex; gap:5px; margin-bottom:10px;">
-            <input type="text" id="newDr" placeholder="Doctor Name">
-            <button class="btn btn-p" style="width:80px;" onclick="window.addDr()">ADD</button>
+    <div class="card" style="border: 1px solid var(--primary);">
+        <p><b>🔑 Password ပြင်ဆင်ရန်</b></p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <input type="text" id="cfgAdminU" placeholder="Admin User">
+            <input type="text" id="cfgAdminP" placeholder="Admin Pass">
+            <input type="text" id="cfgUserU" placeholder="Staff User">
+            <input type="text" id="cfgUserP" placeholder="Staff Pass">
         </div>
+        <button class="btn btn-p" style="width:100%" onclick="updatePasswords()">UPDATE PASSWORDS ONLY</button>
+    </div>
+    <div class="card" style="border: 1px solid #ddd;">
+        <p><b>👨‍⚕️ ဆရာဝန်အမည်များ စီမံရန်</b></p>
+        <div style="display:flex; gap:5px; margin-bottom:15px;">
+            <input type="text" id="newDr" placeholder="Doctor Name" style="margin:0;">
+            <button class="btn btn-w" style="width:100px;" onclick="addDr()">ADD DR</button>
+        </div>
+        <hr>
         <div id="drManagerList"></div>
     </div>
-    <button class="btn btn-d" onclick="closeModal('settingsModal')">CLOSE</button>
+    <div style="margin-top: 20px; padding-bottom: 30px;">
+        <button class="btn btn-d" style="width:100%; height: 50px;" onclick="closeModal('settingsModal')">CLOSE SETTINGS</button>
+    </div>
 </div>
 
 <script type="module">
@@ -206,7 +205,7 @@
         apiKey: "AIzaSyAo0NxlLIUtWzIJJx8Ein5Ftidacw0W9Lw",
         authDomain: "myrecordsystem-af249.firebaseapp.com",
         projectId: "myrecordsystem-af249",
-        storageBucket: "myrecordsystem-af249.firebasestorage.app",
+        storageBucket: "myrecordsystem-af249.appspot.com",
         messagingSenderId: "64211980634",
         appId: "1:64211980634:web:1a7632c615217b2545e363"
     };
@@ -214,195 +213,197 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let doctors = [];
-    let database = {};
-    let config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
+    let doctors = [], database = {}, config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
 
     function startSync() {
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
-                database = data.db || {};
-                config = data.cfg || config;
-                doctors = data.drs || [];
+                database = data.db || {}; config = data.cfg || config; doctors = data.drs || [];
                 updateUI();
-                document.getElementById('sync-status').innerText = "Cloud Synced ✓";
-                document.getElementById('sync-status').style.color = "#10b981";
-                
-                document.getElementById('newAdminU').value = config.admin_user;
-                document.getElementById('newAdminP').value = config.admin_pass;
-                document.getElementById('newUserU').value = config.user_user;
-                document.getElementById('newUserP').value = config.user_pass;
-                document.getElementById('rateW').value = config.w_rate;
-                document.getElementById('rateR').value = config.r_rate;
+                document.getElementById('stat-dot').className = "status-dot online-dot";
+                document.getElementById('stat-text').innerText = "Online";
             }
         });
     }
 
-    async function pushData() {
-        document.getElementById('sync-status').innerText = "Saving to Cloud...";
-        try { 
-            await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors }); 
-            document.getElementById('sync-status').innerText = "Saved Success ✓";
-        } catch(e) { alert("Data Sync Failed!"); }
-    }
-
     window.doLogin = () => {
         const u = document.getElementById('userIn').value, p = document.getElementById('passIn').value;
-        if(u === config.admin_user && p === config.admin_pass) { sessionStorage.setItem('role', 'admin'); initApp(); }
-        else if(u === config.user_user && p === config.user_pass) { sessionStorage.setItem('role', 'user'); initApp(); }
-        else { document.getElementById('loginErr').innerText = "Invalid Login!"; }
+        if(u === config.admin_user && p === config.admin_pass) { sessionStorage.setItem('role', 'admin'); boot(); }
+        else if(u === config.user_user && p === config.user_pass) { sessionStorage.setItem('role', 'user'); boot(); }
+        else alert("Login Failed!");
     };
 
-    window.updateCreds = async (role) => {
-        if(role === 'admin') { config.admin_user = document.getElementById('newAdminU').value; config.admin_pass = document.getElementById('newAdminP').value; }
-        else { config.user_user = document.getElementById('newUserU').value; config.user_pass = document.getElementById('newUserP').value; }
-        await pushData(); alert("Updated!");
-    };
-
-    window.updateRates = async () => {
-        config.w_rate = Number(document.getElementById('rateW').value);
-        config.r_rate = Number(document.getElementById('rateR').value);
-        await pushData(); alert("Rates Saved!");
-    };
-
-    window.addDr = async () => {
-        const n = document.getElementById('newDr').value;
-        if(n) { doctors.push(n); renderDrMgr(); document.getElementById('newDr').value=''; await pushData(); }
-    };
-
-    window.removeDr = async (i) => { if(confirm("Delete Doctor?")) { doctors.splice(i,1); renderDrMgr(); await pushData(); } };
-
-    function initApp() {
-        if(!sessionStorage.getItem('role')) return;
+    function boot() {
         document.getElementById('login-screen').style.display='none';
         document.getElementById('app-body').style.display='block';
         document.getElementById('role-text').innerText = sessionStorage.getItem('role').toUpperCase();
         if(sessionStorage.getItem('role') === 'admin') document.getElementById('admin-gear').style.display = 'block';
         
-        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const d = new Date(), months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         document.getElementById('monthIn').innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
-        document.getElementById('monthIn').selectedIndex = new Date().getMonth();
-        document.getElementById('dayIn').value = new Date().getDate();
-        document.getElementById('yearIn').value = new Date().getFullYear();
+        document.getElementById('monthIn').selectedIndex = d.getMonth();
+        document.getElementById('dayIn').value = d.getDate();
+        document.getElementById('yearIn').value = d.getFullYear();
         startSync();
     }
 
-    window.switchTab = (t) => {
-        document.getElementById('view-m').style.display = t === 'm' ? 'block' : 'none';
-        document.getElementById('view-y').style.display = t === 'y' ? 'block' : 'none';
-        document.getElementById('tab-m').style.background = t === 'm' ? '#2563eb' : '#cbd5e1';
-        document.getElementById('tab-y').style.background = t === 'y' ? '#059669' : '#cbd5e1';
-        updateUI();
-    };
-
     window.openEntry = () => {
-        const d = document.getElementById('dayIn').value;
-        if(!d) return alert("Enter Day!");
         document.getElementById('entryModal').style.display='block';
+        document.getElementById('dayLabel').innerText = document.getElementById('dayIn').value;
         renderEntryRows(doctors);
-        document.getElementById('dayLabel').innerText = d;
     };
 
     window.filterDoctors = () => {
-        const term = document.getElementById('drSearch').value.toLowerCase();
-        const filtered = doctors.filter(dr => dr.toLowerCase().includes(term));
-        renderEntryRows(filtered);
+        renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(document.getElementById('drSearch').value.toLowerCase())));
     };
 
     function renderEntryRows(list) {
-        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value;
-        const dateKey = `${m}_${y}`;
-        document.getElementById('entryRows').innerHTML = list.map((dr) => {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
+        document.getElementById('entryRows').innerHTML = list.map(dr => {
             const idx = doctors.indexOf(dr);
-            const val = (database[dateKey] && database[dateKey][d] && database[dateKey][d][idx]) ? database[dateKey][d][idx] : {w:'', r:''};
-            return `<div class="entry-row"><div class="dr-tag">${dr}</div>
-                <input type="number" id="w-${idx}" value="${val.w}" placeholder="W" oninput="window.saveLocal(${idx})">
-                <input type="number" id="r-${idx}" value="${val.r}" placeholder="R" oninput="window.saveLocal(${idx})"></div>`;
+            const val = database[key]?.[d]?.[idx] || {w:'', r:''};
+            return `<div class="entry-row">
+                <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
+                <input type="number" value="${val.w}" placeholder="W" oninput="updateVal(${idx}, 'w', this.value)">
+                <input type="number" value="${val.r}" placeholder="R" oninput="updateVal(${idx}, 'r', this.value)">
+            </div>`;
         }).join('');
         calcDaily();
     }
 
-    window.saveLocal = (i) => {
-        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
-        if(!database[dateKey]) database[dateKey] = {}; if(!database[dateKey][d]) database[dateKey][d] = {};
-        database[dateKey][d][i] = { w: document.getElementById(`w-${i}`).value, r: document.getElementById(`r-${i}`).value };
+    window.updateVal = (idx, type, val) => {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
+        if(!database[key]) database[key] = {}; if(!database[key][d]) database[key][d] = {};
+        if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
+        database[key][d][idx][type] = val;
         calcDaily();
     };
 
     function calcDaily() {
-        let tw = 0, tr = 0, activeDr = 0;
-        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
+        let tw = 0, tr = 0, active = 0;
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         doctors.forEach((_, i) => {
-            const wIn = document.getElementById(`w-${i}`);
-            const rIn = document.getElementById(`r-${i}`);
-            let wVal = wIn ? wIn.value : (database[dateKey]?.[d]?.[i]?.w || "");
-            let rVal = rIn ? rIn.value : (database[dateKey]?.[d]?.[i]?.r || "");
-            tw += (+wVal || 0); tr += (+rVal || 0);
-            if((+wVal > 0) || (+rVal > 0)) activeDr++;
+            const r = database[key]?.[d]?.[i];
+            const w = +r?.w || 0, rr = +r?.r || 0;
+            if(w > 0 || rr > 0) active++;
+            tw += w; tr += rr;
         });
         document.getElementById('d-w').innerText = tw; document.getElementById('d-r').innerText = tr;
-        document.getElementById('d-all').innerText = tw + tr; document.getElementById('dr-active-count').innerText = activeDr;
+        document.getElementById('d-all').innerText = tw+tr; document.getElementById('active-dr-count').innerText = active;
     }
 
-    // --- FULL SHEET LOGIC ---
-    window.openFullSheet = () => {
-        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
-        document.getElementById('fullSheetTitle').innerText = `${m} ${y} Full Breakdown`;
-        
-        let head = `<tr><th class="dr-name">Doctor Name</th>`;
-        for(let d=1; d<=31; d++) head += `<th colspan="2">Day ${d}</th>`;
-        head += `<th colspan="2" style="background:#059669">TOTAL</th></tr><tr><th class="dr-name"></th>`;
-        for(let d=1; d<=32; d++) head += `<th style="font-size:9px">W</th><th style="font-size:9px">R</th>`;
-        head += `</tr>`;
-
-        let body = "";
-        doctors.forEach((dr, i) => {
-            body += `<tr><td class="dr-name">${dr}</td>`;
-            let drTw = 0, drTr = 0;
-            for(let d=1; d<=31; d++) {
-                let w = database[dateKey]?.[d]?.[i]?.w || "-";
-                let r = database[dateKey]?.[d]?.[i]?.r || "-";
-                body += `<td class="day-col">${w}</td><td class="day-col">${r}</td>`;
-                drTw += (+w || 0); drTr += (+r || 0);
-            }
-            body += `<td style="background:#ecfdf5">${drTw}</td><td style="background:#ecfdf5">${drTr}</td></tr>`;
-        });
-
-        document.getElementById('fullSheetTable').innerHTML = head + body;
-        document.getElementById('fullSheetModal').style.display = 'flex';
+    window.closeEntry = async () => {
+        document.getElementById('entryModal').style.display='none';
+        await saveToFirebase();
     };
 
-    window.closeFullSheet = () => { document.getElementById('fullSheetModal').style.display = 'none'; };
-
     function updateUI() {
-        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, dateKey = `${m}_${y}`;
-        document.getElementById('m-title').innerText = `${m} ${y} Report`;
-        let mBody = "", yBody = "";
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
+        document.getElementById('y-label').innerText = y;
+        document.getElementById('m-print-label').innerText = m + " " + y;
+        let mHtml = "", yHtml = "";
+        
         doctors.forEach((dr, i) => {
-            let wQ = 0, rQ = 0;
-            if(database[dateKey]) Object.values(database[dateKey]).forEach(day => { if(day[i]){ wQ += (+day[i].w||0); rQ += (+day[i].r||0); } });
-            if(wQ || rQ) {
-                let total = (wQ * config.w_rate) + (rQ * config.r_rate);
-                mBody += `<tr><td class="dr-name">${dr}</td><td>${wQ}</td><td>${(wQ*config.w_rate).toLocaleString()}</td><td>${rQ}</td><td>${(rQ*config.r_rate).toLocaleString()}</td><td style="color:#2563eb;">${total.toLocaleString()}</td></tr>`;
+            let mw = 0, mr = 0, yw = 0, yr = 0;
+            if(database[key]) Object.values(database[key]).forEach(d => { mw += (+d[i]?.w||0); mr += (+d[i]?.r||0); });
+            Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
+                Object.values(database[k]).forEach(d => { yw += (+d[i]?.w||0); yr += (+d[i]?.r||0); });
+            });
+
+            if(mw+mr > 0) {
+                const wAmt = mw * config.w_rate, rAmt = mr * config.r_rate;
+                mHtml += `<tr><td class="dr-name">${dr}</td><td>${mw}</td><td>${wAmt.toLocaleString()}</td><td>${mr}</td><td>${rAmt.toLocaleString()}</td><td style="color:blue;">${(wAmt+rAmt).toLocaleString()}</td></tr>`;
             }
-            let tw = 0, tr = 0;
-            Object.keys(database).forEach(key => { if(key.endsWith(y)) { Object.values(database[key]).forEach(day => { if(day[i]){ tw += (+day[i].w||0); tr += (+day[i].r||0); } }); } });
-            if(tw || tr) yBody += `<tr><td class="dr-name">${dr}</td><td>${tw}</td><td>${tr}</td><td style="color:#059669;">${((tw*config.w_rate)+(tr*config.r_rate)).toLocaleString()}</td></tr>`;
+            if(yw+yr > 0) {
+                const tot = (yw * config.w_rate) + (yr * config.r_rate);
+                yHtml += `<tr><td class="dr-name">${dr}</td><td>${yw}</td><td>${yr}</td><td>${tot.toLocaleString()}</td></tr>`;
+            }
         });
-        document.getElementById('m-table-body').innerHTML = mBody; document.getElementById('y-table-body').innerHTML = yBody;
+        document.getElementById('m-table-body').innerHTML = mHtml;
+        document.getElementById('y-table-body').innerHTML = yHtml;
+        
+        document.getElementById('rateW').value = config.w_rate; document.getElementById('rateR').value = config.r_rate;
+        document.getElementById('cfgAdminU').value = config.admin_user; document.getElementById('cfgAdminP').value = config.admin_pass;
+        document.getElementById('cfgUserU').value = config.user_user; document.getElementById('cfgUserP').value = config.user_pass;
     }
 
-    window.openModal = (id) => { document.getElementById(id).style.display='block'; if(id==='settingsModal') renderDrMgr(); };
-    window.closeModal = (id) => { document.getElementById(id).style.display='none'; };
-    function renderDrMgr() { document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;">${dr} <span class="material-icons" style="color:red; cursor:pointer;" onclick="window.removeDr(${i})">delete</span></div>`).join(''); }
+    window.updateRates = async () => {
+        config.w_rate = +document.getElementById('rateW').value;
+        config.r_rate = +document.getElementById('rateR').value;
+        await saveToFirebase();
+        alert("💰 Rates Updated!");
+    };
 
-    document.getElementById('loginBtn').onclick = window.doLogin;
-    document.getElementById('logoutBtn').onclick = () => { sessionStorage.clear(); location.reload(); };
-    document.getElementById('doneBtn').onclick = async () => { window.closeModal('entryModal'); await pushData(); };
+    window.updatePasswords = async () => {
+        config.admin_user = document.getElementById('cfgAdminU').value;
+        config.admin_pass = document.getElementById('cfgAdminP').value;
+        config.user_user = document.getElementById('cfgUserU').value;
+        config.user_pass = document.getElementById('cfgUserP').value;
+        await saveToFirebase();
+        alert("🔑 Passwords Updated!");
+    };
+
+    window.addDr = async () => {
+        const n = document.getElementById('newDr').value;
+        if(n) { doctors.push(n); document.getElementById('newDr').value=''; await saveToFirebase(); renderDrMgr(); }
+    };
+
+    window.removeDr = async (i) => {
+        if(confirm(`Delete ${doctors[i]}?`)) { doctors.splice(i,1); await saveToFirebase(); renderDrMgr(); }
+    };
+
+    async function saveToFirebase() {
+        await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors });
+    }
+
+    window.openFullSheet = () => {
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
+        let h = `<tr><th class="sticky-col">Doctor</th>`;
+        for(let d=1; d<=31; d++) h += `<th colspan="2">D${d}</th>`;
+        h += `</tr><tr><th class="sticky-col"></th>`;
+        for(let d=1; d<=31; d++) h += `<th>W</th><th>R</th>`;
+        h += `</tr>`;
+        let b = doctors.map((dr, i) => {
+            let row = `<td class="sticky-col dr-name">${dr}</td>`;
+            for(let d=1; d<=31; d++) {
+                let dta = database[key]?.[d]?.[i] || {w:'-', r:'-'};
+                row += `<td>${dta.w||'-'}</td><td>${dta.r||'-'}</td>`;
+            }
+            return `<tr>${row}</tr>`;
+        }).join('');
+        document.getElementById('fullSheetTable').innerHTML = h + b;
+        document.getElementById('fullSheetModal').style.display = 'block';
+    };
+
+    window.switchTab = (t) => {
+        document.getElementById('view-m').style.display = t === 'm' ? 'block' : 'none';
+        document.getElementById('view-y').style.display = t === 'y' ? 'block' : 'none';
+        // Add print-area class to active view
+        document.getElementById('view-m').classList.toggle('print-area', t === 'm');
+        document.getElementById('view-y').classList.toggle('print-area', t === 'y');
+    };
+
+    window.openModal = (id) => { 
+        document.getElementById(id).style.display='block'; 
+        if(id==='settingsModal') renderDrMgr(); 
+    };
+    
+    window.closeModal = (id) => document.getElementById(id).style.display='none';
+    
+    function renderDrMgr() {
+        document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                <span style="font-weight:bold; color:#334155;">${dr}</span>
+                <button class="del-btn" onclick="removeDr(${i})">
+                    <span class="material-icons" style="font-size:20px;">delete_outline</span>
+                </button>
+            </div>`).join('');
+    }
+
+    window.onload = () => { if(sessionStorage.getItem('role')) boot(); };
     document.getElementById('monthIn').onchange = updateUI;
     document.getElementById('yearIn').oninput = updateUI;
-    window.onload = () => { if(sessionStorage.getItem('role')) initApp(); };
 </script>
 </body>
 </html>
