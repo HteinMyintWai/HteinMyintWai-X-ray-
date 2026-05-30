@@ -55,7 +55,6 @@
             th { background: #eee !important; color: black !important; }
         }
         @page { size: auto; margin: 10mm; }
-        .landscape-print { size: landscape; }
     </style>
 </head>
 <body>
@@ -93,9 +92,9 @@
         <div class="card no-print">
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
                 <input type="number" id="dayIn">
-                <select id="monthIn"></select>
+                <select id="monthIn" onchange="updateUI()"></select>
             </div>
-            <input type="number" id="yearIn">
+            <input type="number" id="yearIn" onchange="updateUI()">
             <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
         </div>
         <div class="card">
@@ -219,8 +218,11 @@
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
-                database = data.db || {}; config = data.cfg || config; doctors = data.drs || [];
+                database = data.db || {}; 
+                config = data.cfg || config; 
+                doctors = data.drs || [];
                 updateUI();
+                renderDrMgr();
                 document.getElementById('stat-dot').className = "status-dot online-dot";
                 document.getElementById('stat-text').innerText = "Online";
             }
@@ -248,10 +250,23 @@
         startSync();
     }
 
+    window.switchTab = (tab) => {
+        if(tab === 'm') { document.getElementById('view-m').style.display = 'block'; document.getElementById('view-y').style.display = 'none'; }
+        if(tab === 'y') { document.getElementById('view-m').style.display = 'none'; document.getElementById('view-y').style.display = 'block'; }
+    };
+
+    window.openModal = (id) => { document.getElementById(id).style.display = 'block'; if(id === 'settingsModal') renderDrMgr(); };
+    window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
+
     window.openEntry = () => {
         document.getElementById('entryModal').style.display='block';
         document.getElementById('dayLabel').innerText = document.getElementById('dayIn').value;
         renderEntryRows(doctors);
+    };
+
+    window.closeEntry = async () => {
+        document.getElementById('entryModal').style.display='none';
+        await saveToFirebase();
     };
 
     window.filterDoctors = () => {
@@ -274,7 +289,8 @@
 
     window.updateVal = (idx, type, val) => {
         const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
-        if(!database[key]) database[key] = {}; if(!database[key][d]) database[key][d] = {};
+        if(!database[key]) database[key] = {}; 
+        if(!database[key][d]) database[key][d] = {};
         if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
         database[key][d][idx][type] = val;
         calcDaily();
@@ -293,11 +309,6 @@
         document.getElementById('d-all').innerText = tw+tr; document.getElementById('active-dr-count').innerText = active;
     }
 
-    window.closeEntry = async () => {
-        document.getElementById('entryModal').style.display='none';
-        await saveToFirebase();
-    };
-
     function updateUI() {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         document.getElementById('y-label').innerText = y;
@@ -308,7 +319,7 @@
             let mw = 0, mr = 0, yw = 0, yr = 0;
             if(database[key]) Object.values(database[key]).forEach(d => { mw += (+d[i]?.w||0); mr += (+d[i]?.r||0); });
             Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
-                Object.values(database[k]).forEach(d => { yw += (+d[i]?.w||0); yr += (+d[i]?.r||0); });
+                if(database[k]) Object.values(database[k]).forEach(d => { yw += (+d[i]?.w||0); yr += (+d[i]?.r||0); });
             });
 
             if(mw+mr > 0) {
@@ -353,57 +364,49 @@
         if(confirm(`Delete ${doctors[i]}?`)) { doctors.splice(i,1); await saveToFirebase(); renderDrMgr(); }
     };
 
+    function renderDrMgr() {
+        document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee;">
+                <span>${dr}</span>
+                <button class="del-btn" onclick="removeDr(${i})"><span class="material-icons">delete</span></button>
+            </div>
+        `).join('');
+    }
+
+    // 💡 ဤနေရာတွင် { merge: true } ထည့်သွင်း၍ ဒေတာဟောင်းများ မပျက်စီးအောင် ကာကွယ်ထားပါသည်
     async function saveToFirebase() {
-        await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors });
+        await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors }, { merge: true });
     }
 
     window.openFullSheet = () => {
-        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
-        let h = `<tr><th class="sticky-col">Doctor</th>`;
-        for(let d=1; d<=31; d++) h += `<th colspan="2">D${d}</th>`;
-        h += `</tr><tr><th class="sticky-col"></th>`;
-        for(let d=1; d<=31; d++) h += `<th>W</th><th>R</th>`;
-        h += `</tr>`;
-        let b = doctors.map((dr, i) => {
-            let row = `<td class="sticky-col dr-name">${dr}</td>`;
-            for(let d=1; d<=31; d++) {
-                let dta = database[key]?.[d]?.[i] || {w:'-', r:'-'};
-                row += `<td>${dta.w||'-'}</td><td>${dta.r||'-'}</td>`;
-            }
-            return `<tr>${row}</tr>`;
-        }).join('');
-        document.getElementById('fullSheetTable').innerHTML = h + b;
         document.getElementById('fullSheetModal').style.display = 'block';
-    };
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
+        
+        let headerHtml = `<tr><th class="sticky-col">Doctor</th>`;
+        for (let day = 1; day <= 31; day++) {
+            headerHtml += `<th colspan="2">Day ${day}</th>`;
+        }
+        headerHtml += `<th colspan="2">Total</th></tr><tr><th class="sticky-col"></th>`;
+        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; }
+        headerHtml += `<th>W</th><th>R</th></tr>`;
 
-    window.switchTab = (t) => {
-        document.getElementById('view-m').style.display = t === 'm' ? 'block' : 'none';
-        document.getElementById('view-y').style.display = t === 'y' ? 'block' : 'none';
-        // Add print-area class to active view
-        document.getElementById('view-m').classList.toggle('print-area', t === 'm');
-        document.getElementById('view-y').classList.toggle('print-area', t === 'y');
-    };
+        let bodyHtml = "";
+        doctors.forEach((dr, i) => {
+            let rowHtml = `<tr><td class="dr-name sticky-col">${dr}</td>`;
+            let totalW = 0, totalR = 0;
+            
+            for (let day = 1; day <= 31; day++) {
+                const val = database[key]?.[day]?.[i] || { w: '', r: '' };
+                rowHtml += `<td>${val.w}</td><td>${val.r}</td>`;
+                totalW += (+val.w || 0);
+                totalR += (+val.r || 0);
+            }
+            rowHtml += `<td style="color:blue;">${totalW}</td><td style="color:blue;">${totalR}</td></tr>`;
+            if(totalW + totalR > 0) bodyHtml += rowHtml;
+        });
 
-    window.openModal = (id) => { 
-        document.getElementById(id).style.display='block'; 
-        if(id==='settingsModal') renderDrMgr(); 
+        document.getElementById('fullSheetTable').innerHTML = `<thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody>`;
     };
-    
-    window.closeModal = (id) => document.getElementById(id).style.display='none';
-    
-    function renderDrMgr() {
-        document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                <span style="font-weight:bold; color:#334155;">${dr}</span>
-                <button class="del-btn" onclick="removeDr(${i})">
-                    <span class="material-icons" style="font-size:20px;">delete_outline</span>
-                </button>
-            </div>`).join('');
-    }
-
-    window.onload = () => { if(sessionStorage.getItem('role')) boot(); };
-    document.getElementById('monthIn').onchange = updateUI;
-    document.getElementById('yearIn').oninput = updateUI;
 </script>
 </body>
 </html>
