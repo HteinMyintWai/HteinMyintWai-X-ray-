@@ -91,10 +91,10 @@
     <div id="view-m" class="print-area">
         <div class="card no-print">
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
-                <input type="number" id="dayIn">
-                <select id="monthIn" onchange="updateUI()"></select>
+                <input type="number" id="dayIn" oninput="window.updateUI()">
+                <select id="monthIn" onchange="window.updateUI()"></select>
             </div>
-            <input type="number" id="yearIn" onchange="updateUI()">
+            <input type="number" id="yearIn" onchange="window.updateUI()">
             <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
         </div>
         <div class="card">
@@ -221,8 +221,8 @@
                 database = data.db || {}; 
                 config = data.cfg || config; 
                 doctors = data.drs || [];
-                updateUI();
-                renderDrMgr();
+                window.updateUI();
+                window.renderDrMgr();
                 document.getElementById('stat-dot').className = "status-dot online-dot";
                 document.getElementById('stat-text').innerText = "Online";
             }
@@ -255,13 +255,13 @@
         if(tab === 'y') { document.getElementById('view-m').style.display = 'none'; document.getElementById('view-y').style.display = 'block'; }
     };
 
-    window.openModal = (id) => { document.getElementById(id).style.display = 'block'; if(id === 'settingsModal') renderDrMgr(); };
+    window.openModal = (id) => { document.getElementById(id).style.display = 'block'; if(id === 'settingsModal') window.renderDrMgr(); };
     window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
 
     window.openEntry = () => {
         document.getElementById('entryModal').style.display='block';
         document.getElementById('dayLabel').innerText = document.getElementById('dayIn').value;
-        renderEntryRows(doctors);
+        window.renderEntryRows(doctors);
     };
 
     window.closeEntry = async () => {
@@ -270,21 +270,21 @@
     };
 
     window.filterDoctors = () => {
-        renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(document.getElementById('drSearch').value.toLowerCase())));
+        window.renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(document.getElementById('drSearch').value.toLowerCase())));
     };
 
-    function renderEntryRows(list) {
+    window.renderEntryRows = (list) => {
         const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         document.getElementById('entryRows').innerHTML = list.map(dr => {
             const idx = doctors.indexOf(dr);
             const val = database[key]?.[d]?.[idx] || {w:'', r:''};
             return `<div class="entry-row">
                 <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
-                <input type="number" value="${val.w}" placeholder="W" oninput="updateVal(${idx}, 'w', this.value)">
-                <input type="number" value="${val.r}" placeholder="R" oninput="updateVal(${idx}, 'r', this.value)">
+                <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal(${idx}, 'w', this.value)">
+                <input type="number" value="${val.r}" placeholder="R" oninput="window.updateVal(${idx}, 'r', this.value)">
             </div>`;
         }).join('');
-        calcDaily();
+        window.calcDaily();
     }
 
     window.updateVal = (idx, type, val) => {
@@ -293,10 +293,10 @@
         if(!database[key][d]) database[key][d] = {};
         if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
         database[key][d][idx][type] = val;
-        calcDaily();
+        window.calcDaily();
     };
 
-    function calcDaily() {
+    window.calcDaily = () => {
         let tw = 0, tr = 0, active = 0;
         const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         doctors.forEach((_, i) => {
@@ -309,7 +309,7 @@
         document.getElementById('d-all').innerText = tw+tr; document.getElementById('active-dr-count').innerText = active;
     }
 
-    function updateUI() {
+    window.updateUI = () => {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         document.getElementById('y-label').innerText = y;
         document.getElementById('m-print-label').innerText = m + " " + y;
@@ -357,23 +357,22 @@
 
     window.addDr = async () => {
         const n = document.getElementById('newDr').value;
-        if(n) { doctors.push(n); document.getElementById('newDr').value=''; await saveToFirebase(); renderDrMgr(); }
+        if(n) { doctors.push(n); document.getElementById('newDr').value=''; await saveToFirebase(); window.renderDrMgr(); }
     };
 
     window.removeDr = async (i) => {
-        if(confirm(`Delete ${doctors[i]}?`)) { doctors.splice(i,1); await saveToFirebase(); renderDrMgr(); }
+        if(confirm(`Delete ${doctors[i]}?`)) { doctors.splice(i,1); await saveToFirebase(); window.renderDrMgr(); }
     };
 
-    function renderDrMgr() {
+    window.renderDrMgr = () => {
         document.getElementById('drManagerList').innerHTML = doctors.map((dr, i) => `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee;">
                 <span>${dr}</span>
-                <button class="del-btn" onclick="removeDr(${i})"><span class="material-icons">delete</span></button>
+                <button class="del-btn" onclick="window.removeDr(${i})"><span class="material-icons">delete</span></button>
             </div>
         `).join('');
     }
 
-    // 💡 ဤနေရာတွင် { merge: true } ထည့်သွင်း၍ ဒေတာဟောင်းများ မပျက်စီးအောင် ကာကွယ်ထားပါသည်
     async function saveToFirebase() {
         await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors }, { merge: true });
     }
