@@ -232,6 +232,14 @@
     let unsubscribeCurrentMonth = null;
     let cachedYearlyData = {};
 
+    // စနစ်ဟောင်းရော စနစ်သစ်ပါ ဒေတာဖတ်ပေးနိုင်မည့် helper function
+    function getDrValue(dayData, drName, idx) {
+        if (!dayData) return { w: '', r: '' };
+        if (dayData[drName]) return dayData[drName]; // စနစ်သစ် (Name)
+        if (dayData[idx]) return dayData[idx]; // စနစ်ဟောင်း (Index)
+        return { w: '', r: '' };
+    }
+
     function startMetaSync() {
         onSnapshot(doc(db, "xray_system", "meta_data"), (snapshot) => {
             if (snapshot.exists()) {
@@ -334,8 +342,8 @@
     window.renderEntryRows = (list) => {
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
         document.getElementById('entryRows').innerHTML = list.map(dr => {
-            // BUG FIX: Array Index မသုံးတော့ဘဲ ဒေါက်တာအမည် (Key) နဲ့ ဒေတာဆွဲထုတ်ပါတယ်
-            const val = database[key]?.[d]?.[dr] || {w:'', r:''};
+            const idx = doctors.indexOf(dr);
+            const val = getDrValue(database[key]?.[d], dr, idx);
             return `<div class="entry-row">
                 <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
                 <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal('${dr}', 'w', this.value)">
@@ -347,21 +355,26 @@
 
     window.updateVal = (drName, type, val) => {
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
-        if (!doctors.includes(drName)) return; 
+        const idx = doctors.indexOf(drName);
+        if (idx === -1) return; 
 
         if(!database[key]) database[key] = {}; 
         if(!database[key][d]) database[key][d] = {};
-        // BUG FIX: Array index နေရာမှာ drName ကို Key အဖြစ်ပြောင်းလဲသတ်မှတ်ခြင်း
+        
+        // စာရင်းအသစ်သွင်းရင် Index ရော Name နဲ့ပါ နှစ်ခုလုံးသိမ်းပေးထားပြီး compatibility ထိန်းထားပါတယ်
         if(!database[key][d][drName]) database[key][d][drName] = {w:'', r:''};
+        if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
+        
         database[key][d][drName][type] = val;
+        database[key][d][idx][type] = val;
         window.calcDaily();
     };
 
     window.calcDaily = () => {
         let tw = 0, tr = 0, active = 0;
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
-        doctors.forEach((dr) => {
-            const r = database[key]?.[d]?.[dr];
+        doctors.forEach((dr, idx) => {
+            const r = getDrValue(database[key]?.[d], dr, idx);
             const w = +r?.w || 0, rr = +r?.r || 0;
             if(w > 0 || rr > 0) active++;
             tw += w; tr += rr;
@@ -397,16 +410,15 @@
             yearlyData = cachedYearlyData;
         }
 
-        doctors.forEach((dr) => {
+        doctors.forEach((dr, idx) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
             
             if (database[key]) {
                 Object.keys(database[key]).forEach(dayKey => {
                     const dData = database[key][dayKey];
-                    if (dData && dData[dr]) {
-                        mw += (+dData[dr].w || 0);
-                        mr += (+dData[dr].r || 0);
-                    }
+                    const v = getDrValue(dData, dr, idx);
+                    mw += (+v.w || 0);
+                    mr += (+v.r || 0);
                 });
             }
 
@@ -414,10 +426,9 @@
                 if (yearlyData[k]) {
                     Object.keys(yearlyData[k]).forEach(dayKey => {
                         const dData = yearlyData[k][dayKey];
-                        if (dData && dData[dr]) {
-                            yw += (+dData[dr].w || 0);
-                            yr += (+dData[dr].r || 0);
-                        }
+                        const v = getDrValue(dData, dr, idx);
+                        yw += (+v.w || 0);
+                        yr += (+v.r || 0);
                     });
                 }
             });
@@ -525,14 +536,11 @@
         
         const cleanedDayData = {};
         if (database[key]?.[d]) {
-            Object.keys(database[key][d]).forEach(drName => {
-                if(doctors.includes(drName)) {
-                    cleanedDayData[drName] = database[key][d][drName];
-                }
+            Object.keys(database[key][d]).forEach(k => {
+                cleanedDayData[k] = database[key][d][k];
             });
         }
 
-        // BUG FIX: ရက်စွဲအလိုက် အခြားဆရာဝန်ဒေတာတွေ မပျက်သွားစေဖို့ Firebase Field Path (Dot Notation) သုံးပြီး သိမ်းဆည်းခြင်း
         const updatePayload = {};
         updatePayload[`days.${d}`] = cleanedDayData;
 
@@ -556,13 +564,13 @@
         let dayTotals = Array.from({length: 32}, () => ({w: 0, r: 0})); 
         let grandW = 0, grandR = 0;
 
-        doctors.forEach((dr) => {
+        doctors.forEach((dr, idx) => {
             let rowHtml = `<tr><td class="dr-name sticky-col">${dr}</td>`;
             let totalW = 0, totalR = 0;
             let hasData = false;
             
             for (let day = 1; day <= 31; day++) {
-                const val = database[key]?.[day]?.[dr] || { w: '', r: '' };
+                const val = getDrValue(database[key]?.[day], dr, idx);
                 rowHtml += `<td>${val.w}</td><td>${val.r}</td>`;
                 
                 const wNum = (+val.w || 0);
