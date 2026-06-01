@@ -26,8 +26,9 @@
 
         input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-size: 15px; outline: none; margin-bottom: 8px; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { background: #334155; color: white; padding: 8px 2px; border: 1px solid #1e293b; }
+        /* ဇယားကွက် ပုံမှန်မြင်ကွင်းစတိုင် - နောက်ခံအမည်းရောင်များ ဖြုတ်ထားသည် */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; }
+        th { background: #ffffff; color: #1e293b; padding: 8px 2px; border: 1px solid #cbd5e1; font-weight: bold; }
         td { padding: 8px 2px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; background: white; }
         .dr-name { text-align: left; padding-left: 8px; color: var(--primary); background: #f8fafc; }
         
@@ -42,6 +43,7 @@
         .active-badge { background: var(--accent); color: #020617; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; margin-top: 5px; display: inline-block; }
 
         .sheet-table th, .sheet-table td { min-width: 45px; border: 1px solid #ddd; padding: 5px; font-size: 10px; }
+        .sheet-table th { background: #ffffff; color: #1e293b; }
         .sticky-col { position: sticky; left: 0; background: #eee !important; z-index: 5; }
 
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
@@ -163,7 +165,7 @@
         <div style="overflow-x:auto;">
             <table id="yearlyTable">
                 <thead>
-                    <tr style="background:#334155; color:white;"><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
+                    <tr><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
                 </thead>
                 <tbody id="y-table-body"></tbody>
             </table>
@@ -394,7 +396,6 @@
             if(mw+mr > 0) {
                 const wAmt = mw * config.w_rate, rAmt = mr * config.r_rate;
                 const rowTot = wAmt + rAmt;
-                /* စုစုပေါင်း Total ကွက်အား ခရမ်းပြာရောင် (#6366f1) ပြောင်းလဲထားသည့်အပိုင်း */
                 mHtml += `<tr><td class="dr-name">${dr}</td><td>${mw}</td><td>${wAmt.toLocaleString()}</td><td>${mr}</td><td>${rAmt.toLocaleString()}</td><td style="color:#6366f1; font-weight:bold;">${rowTot.toLocaleString()}</td></tr>`;
                 
                 grandMonthWQty += mw; grandMonthWAmt += wAmt;
@@ -403,7 +404,6 @@
             }
             if(yw+yr > 0) {
                 const tot = (yw * config.w_rate) + (yr * config.r_rate);
-                /* စုစုပေါင်း Grand Total ကွက်အား ခရမ်းပြာရောင် (#6366f1) ပြောင်းလဲထားသည့်အပိုင်း */
                 yHtml += `<tr><td class="dr-name">${dr}</td><td>${yw}</td><td>${yr}</td><td style="color:#6366f1; font-weight:bold;">${tot.toLocaleString()}</td></tr>`;
                 
                 grandYearWQty += yw;
