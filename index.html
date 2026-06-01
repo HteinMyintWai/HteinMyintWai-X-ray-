@@ -108,9 +108,9 @@
         <div class="card no-print">
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
                 <input type="number" id="dayIn" oninput="window.updateUI()">
-                <select id="monthIn" onchange="window.updateUI()"></select>
+                <select id="monthIn" onchange="window.setupMonthlySync()"></select>
             </div>
-            <input type="number" id="yearIn" onchange="window.updateUI()">
+            <input type="number" id="yearIn" onchange="window.setupMonthlySync()">
             <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
         </div>
         <div class="card">
@@ -239,11 +239,10 @@
                 config = data.cfg || config; 
                 doctors = data.drs || [];
                 window.renderDrMgr();
-                setupMonthlySync();
+                window.setupMonthlySync();
                 
-                // Real-time ကာကွယ်ချက်- Admin က ဆရာဝန်အမည်တွေပြင်/ဖျက်လိုက်ရင် User ဖွင့်ထားတဲ့ စာရင်းသွင်းကွက်ထဲမှာပါ Dynamic အလိုအလျောက် ပြောင်းသွားစေရန်
                 if(document.getElementById('entryModal').style.display === 'block') {
-                    filterDoctors();
+                    window.filterDoctors();
                 }
             } else {
                 saveMetaToFirebase();
@@ -251,7 +250,7 @@
         });
     }
 
-    function setupMonthlySync() {
+    window.setupMonthlySync = () => {
         const m = document.getElementById('monthIn').value;
         const y = document.getElementById('yearIn').value;
         const targetKey = `${m}_${y}`;
@@ -276,7 +275,7 @@
             window.updateUI();
             
             if(document.getElementById('entryModal').style.display === 'block') {
-                filterDoctors();
+                window.filterDoctors();
             }
 
             document.getElementById('stat-dot').className = "status-dot online-dot";
@@ -335,8 +334,8 @@
     window.renderEntryRows = (list) => {
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
         document.getElementById('entryRows').innerHTML = list.map(dr => {
-            const idx = doctors.indexOf(dr);
-            const val = database[key]?.[d]?.[idx] || {w:'', r:''};
+            // BUG FIX: Array Index မသုံးတော့ဘဲ ဒေါက်တာအမည် (Key) နဲ့ ဒေတာဆွဲထုတ်ပါတယ်
+            const val = database[key]?.[d]?.[dr] || {w:'', r:''};
             return `<div class="entry-row">
                 <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
                 <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal('${dr}', 'w', this.value)">
@@ -348,21 +347,21 @@
 
     window.updateVal = (drName, type, val) => {
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
-        const idx = doctors.indexOf(drName);
-        if (idx === -1) return; // စိတ်ချရမှု စစ်ဆေးချက် - စာရင်းသွင်းနေတုန်း Admin ဖျက်လိုက်ရင် ဘာမှ ဆက်မလုပ်ပါ
+        if (!doctors.includes(drName)) return; 
 
         if(!database[key]) database[key] = {}; 
         if(!database[key][d]) database[key][d] = {};
-        if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
-        database[key][d][idx][type] = val;
+        // BUG FIX: Array index နေရာမှာ drName ကို Key အဖြစ်ပြောင်းလဲသတ်မှတ်ခြင်း
+        if(!database[key][d][drName]) database[key][d][drName] = {w:'', r:''};
+        database[key][d][drName][type] = val;
         window.calcDaily();
     };
 
     window.calcDaily = () => {
         let tw = 0, tr = 0, active = 0;
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
-        doctors.forEach((_, i) => {
-            const r = database[key]?.[d]?.[i];
+        doctors.forEach((dr) => {
+            const r = database[key]?.[d]?.[dr];
             const w = +r?.w || 0, rr = +r?.r || 0;
             if(w > 0 || rr > 0) active++;
             tw += w; tr += rr;
@@ -398,15 +397,15 @@
             yearlyData = cachedYearlyData;
         }
 
-        doctors.forEach((dr, i) => {
+        doctors.forEach((dr) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
             
             if (database[key]) {
                 Object.keys(database[key]).forEach(dayKey => {
                     const dData = database[key][dayKey];
-                    if (dData && dData[i]) {
-                        mw += (+dData[i].w || 0);
-                        mr += (+dData[i].r || 0);
+                    if (dData && dData[dr]) {
+                        mw += (+dData[dr].w || 0);
+                        mr += (+dData[dr].r || 0);
                     }
                 });
             }
@@ -415,9 +414,9 @@
                 if (yearlyData[k]) {
                     Object.keys(yearlyData[k]).forEach(dayKey => {
                         const dData = yearlyData[k][dayKey];
-                        if (dData && dData[i]) {
-                            yw += (+dData[i].w || 0);
-                            yr += (+dData[i].r || 0);
+                        if (dData && dData[dr]) {
+                            yw += (+dData[dr].w || 0);
+                            yr += (+dData[dr].r || 0);
                         }
                     });
                 }
@@ -520,22 +519,20 @@
         await setDoc(doc(db, "xray_system", "meta_data"), { cfg: config, drs: doctors }, { merge: true });
     }
 
-    // နောက်ဆုံးပြင်ဆင်ချက်- စာရင်းသိမ်းသည့်အချိန်တွင် လက်ရှိရှိနေသော ဆရာဝန်အမှန်စာရင်းကို တိုက်ရိုက်သန့်စင်ပြီးမှ သွားသိမ်းပေးလို့ Index လွဲပြီး အခြားသူစာရင်း ပျက်စီးမည့်ဘေးမှ ရာနှုန်းပြည့် စိတ်ချရသွားပါပြီ
     async function saveCurrentMonthToFirebase() {
         const key = currentMonthKey;
         const d = document.getElementById('dayIn').value;
         
-        // လက်ရှိ local memory ထဲမှာရှိတဲ့ data ကို clean ဖြစ်အောင် mapping အရင်လုပ်ခြင်း
         const cleanedDayData = {};
         if (database[key]?.[d]) {
-            Object.keys(database[key][d]).forEach(oldIdx => {
-                // လက်ရှိ doctors array ထဲမှာ အဲဒီဆရာဝန် ရှိသေးရဲ့လား ပြန်ရှာပါတယ်
-                if(database[key][d][oldIdx]) {
-                    cleanedDayData[oldIdx] = database[key][d][oldIdx];
+            Object.keys(database[key][d]).forEach(drName => {
+                if(doctors.includes(drName)) {
+                    cleanedDayData[drName] = database[key][d][drName];
                 }
             });
         }
 
+        // BUG FIX: ရက်စွဲအလိုက် အခြားဆရာဝန်ဒေတာတွေ မပျက်သွားစေဖို့ Firebase Field Path (Dot Notation) သုံးပြီး သိမ်းဆည်းခြင်း
         const updatePayload = {};
         updatePayload[`days.${d}`] = cleanedDayData;
 
@@ -559,13 +556,13 @@
         let dayTotals = Array.from({length: 32}, () => ({w: 0, r: 0})); 
         let grandW = 0, grandR = 0;
 
-        doctors.forEach((dr, i) => {
+        doctors.forEach((dr) => {
             let rowHtml = `<tr><td class="dr-name sticky-col">${dr}</td>`;
             let totalW = 0, totalR = 0;
             let hasData = false;
             
             for (let day = 1; day <= 31; day++) {
-                const val = database[key]?.[day]?.[i] || { w: '', r: '' };
+                const val = database[key]?.[day]?.[dr] || { w: '', r: '' };
                 rowHtml += `<td>${val.w}</td><td>${val.r}</td>`;
                 
                 const wNum = (+val.w || 0);
