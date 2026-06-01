@@ -26,6 +26,7 @@
 
         input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-size: 15px; outline: none; margin-bottom: 8px; }
         
+        /* ဇယားကွက် ပုံမှန်မြင်ကွင်းစတိုင် - နောက်ခံအမည်းရောင်များ ဖြုတ်ထားသည် */
         table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; }
         th { background: #ffffff; color: #1e293b; padding: 8px 2px; border: 1px solid #cbd5e1; font-weight: bold; }
         td { padding: 8px 2px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; background: white; }
@@ -48,6 +49,7 @@
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
+        /* PRINT ထုတ်ချိန် အဖြူထည်စတိုင် */
         @media print {
             body * { visibility: hidden; }
             .print-area, .print-area * { 
@@ -59,13 +61,41 @@
             .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; background: #ffffff !important; }
             .btn-print, .btn, .status-bar, .no-print, input, select { display: none !important; }
             .card { background: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+            
             h3 { font-size: 20px !important; margin-bottom: 15px !important; text-align: center; color: #000000 !important; font-weight: bold; }
+            
             table { font-size: 13px !important; width: 100% !important; border: 1.5px solid #000000 !important; border-collapse: collapse; background: #ffffff !important; }
-            th { background: #ffffff !important; color: #000000 !important; font-size: 13px !important; padding: 10px 4px !important; border: 1.5px solid #000000 !important; font-weight: bold; }
-            td { padding: 10px 4px !important; border: 1.5px solid #000000 !important; font-size: 13px !important; font-weight: bold; color: #000000 !important; background: #ffffff !important; }
+            
+            th { 
+                background: #ffffff !important; 
+                color: #000000 !important; 
+                font-size: 13px !important; 
+                padding: 10px 4px !important; 
+                border: 1.5px solid #000000 !important; 
+                font-weight: bold; 
+            }
+            
+            td { 
+                padding: 10px 4px !important; 
+                border: 1.5px solid #000000 !important; 
+                font-size: 13px !important; 
+                font-weight: bold; 
+                color: #000000 !important; 
+                background: #ffffff !important;
+            }
+            
             .dr-name { background: #ffffff !important; color: #000000 !important; padding-left: 10px !important; text-align: left; }
             td:last-child { color: #000000 !important; background: #ffffff !important; }
-            .grand-total-row td { background: #ffffff !important; color: #000000 !important; font-size: 14px !important; font-weight: 900 !important; border-top: 2px solid #000000 !important; border-bottom: 4px double #000000 !important; }
+            
+            .grand-total-row td { 
+                background: #ffffff !important; 
+                color: #000000 !important; 
+                font-size: 14px !important; 
+                font-weight: 900 !important;
+                border-top: 2px solid #000000 !important; 
+                border-bottom: 4px double #000000 !important; 
+            }
+            
             .sheet-table th { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
             .sheet-table td { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
             .sticky-col { position: static !important; background: #ffffff !important; }
@@ -108,9 +138,9 @@
         <div class="card no-print">
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
                 <input type="number" id="dayIn" oninput="window.updateUI()">
-                <select id="monthIn" onchange="window.setupMonthlySync()"></select>
+                <select id="monthIn" onchange="window.updateUI()"></select>
             </div>
-            <input type="number" id="yearIn" onchange="window.setupMonthlySync()">
+            <input type="number" id="yearIn" onchange="window.updateUI()">
             <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
         </div>
         <div class="card">
@@ -214,7 +244,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAo0NxlLIUtWzIJJx8Ein5Ftidacw0W9Lw",
@@ -228,68 +258,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let doctors = [], database = {}, currentMonthKey = "", config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
-    let unsubscribeCurrentMonth = null;
-    let cachedYearlyData = {};
+    let doctors = [], database = {}, config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
 
-    // စနစ်ဟောင်းရော စနစ်သစ်ပါ ဒေတာဖတ်ပေးနိုင်မည့် helper function
-    function getDrValue(dayData, drName, idx) {
-        if (!dayData) return { w: '', r: '' };
-        if (dayData[drName]) return dayData[drName]; // စနစ်သစ် (Name)
-        if (dayData[idx]) return dayData[idx]; // စနစ်ဟောင်း (Index)
-        return { w: '', r: '' };
-    }
-
-    function startMetaSync() {
-        onSnapshot(doc(db, "xray_system", "meta_data"), (snapshot) => {
+    function startSync() {
+        onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
+                database = data.db || {}; 
                 config = data.cfg || config; 
                 doctors = data.drs || [];
+                window.updateUI();
                 window.renderDrMgr();
-                window.setupMonthlySync();
-                
-                if(document.getElementById('entryModal').style.display === 'block') {
-                    window.filterDoctors();
-                }
-            } else {
-                saveMetaToFirebase();
+                document.getElementById('stat-dot').className = "status-dot online-dot";
+                document.getElementById('stat-text').innerText = "Online";
             }
-        });
-    }
-
-    window.setupMonthlySync = () => {
-        const m = document.getElementById('monthIn').value;
-        const y = document.getElementById('yearIn').value;
-        const targetKey = `${m}_${y}`;
-
-        if (currentMonthKey === targetKey) {
-            window.updateUI();
-            return;
-        }
-
-        if (unsubscribeCurrentMonth) unsubscribeCurrentMonth();
-
-        currentMonthKey = targetKey;
-        document.getElementById('stat-dot').className = "status-dot offline-dot";
-        document.getElementById('stat-text').innerText = "Connecting...";
-
-        unsubscribeCurrentMonth = onSnapshot(doc(db, "xray_months", targetKey), (snapshot) => {
-            if (snapshot.exists()) {
-                database[targetKey] = snapshot.data().days || {};
-            } else {
-                database[targetKey] = {};
-            }
-            window.updateUI();
-            
-            if(document.getElementById('entryModal').style.display === 'block') {
-                window.filterDoctors();
-            }
-
-            document.getElementById('stat-dot').className = "status-dot online-dot";
-            document.getElementById('stat-text').innerText = "Online";
-        }, (error) => {
-            console.error("Sync Error:", error);
         });
     }
 
@@ -311,7 +293,7 @@
         document.getElementById('monthIn').selectedIndex = d.getMonth();
         document.getElementById('dayIn').value = d.getDate();
         document.getElementById('yearIn').value = d.getFullYear();
-        startMetaSync();
+        startSync();
     }
 
     window.switchTab = (tab) => {
@@ -331,50 +313,41 @@
 
     window.closeEntry = async () => {
         document.getElementById('entryModal').style.display='none';
-        await saveCurrentMonthToFirebase();
+        await saveToFirebase();
     };
 
     window.filterDoctors = () => {
-        const searchVal = document.getElementById('drSearch').value.toLowerCase();
-        window.renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(searchVal)));
+        window.renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(document.getElementById('drSearch').value.toLowerCase())));
     };
 
     window.renderEntryRows = (list) => {
-        const d = document.getElementById('dayIn').value, key = currentMonthKey;
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         document.getElementById('entryRows').innerHTML = list.map(dr => {
             const idx = doctors.indexOf(dr);
-            const val = getDrValue(database[key]?.[d], dr, idx);
+            const val = database[key]?.[d]?.[idx] || {w:'', r:''};
             return `<div class="entry-row">
                 <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
-                <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal('${dr}', 'w', this.value)">
-                <input type="number" value="${val.r}" placeholder="R" oninput="window.updateVal('${dr}', 'r', this.value)">
+                <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal(${idx}, 'w', this.value)">
+                <input type="number" value="${val.r}" placeholder="R" oninput="window.updateVal(${idx}, 'r', this.value)">
             </div>`;
         }).join('');
         window.calcDaily();
     }
 
-    window.updateVal = (drName, type, val) => {
-        const d = document.getElementById('dayIn').value, key = currentMonthKey;
-        const idx = doctors.indexOf(drName);
-        if (idx === -1) return; 
-
+    window.updateVal = (idx, type, val) => {
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         if(!database[key]) database[key] = {}; 
         if(!database[key][d]) database[key][d] = {};
-        
-        // စာရင်းအသစ်သွင်းရင် Index ရော Name နဲ့ပါ နှစ်ခုလုံးသိမ်းပေးထားပြီး compatibility ထိန်းထားပါတယ်
-        if(!database[key][d][drName]) database[key][d][drName] = {w:'', r:''};
         if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
-        
-        database[key][d][drName][type] = val;
         database[key][d][idx][type] = val;
         window.calcDaily();
     };
 
     window.calcDaily = () => {
         let tw = 0, tr = 0, active = 0;
-        const d = document.getElementById('dayIn').value, key = currentMonthKey;
-        doctors.forEach((dr, idx) => {
-            const r = getDrValue(database[key]?.[d], dr, idx);
+        const d = document.getElementById('dayIn').value, m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
+        doctors.forEach((_, i) => {
+            const r = database[key]?.[d]?.[i];
             const w = +r?.w || 0, rr = +r?.r || 0;
             if(w > 0 || rr > 0) active++;
             tw += w; tr += rr;
@@ -383,7 +356,7 @@
         document.getElementById('d-all').innerText = tw+tr; document.getElementById('active-dr-count').innerText = active;
     }
 
-    window.updateUI = async () => {
+    window.updateUI = () => {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         document.getElementById('y-label').innerText = y;
         document.getElementById('m-print-label').innerText = m + " " + y;
@@ -395,40 +368,27 @@
 
         let grandYearWQty = 0, grandYearRQty = 0, grandYearTotalAmt = 0;
         
-        let yearlyData = {};
-        try {
-            const q = collection(db, "xray_months");
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                if(doc.id.endsWith(`_${y}`)) {
-                    yearlyData[doc.id] = doc.data().days || {};
-                }
-            });
-            cachedYearlyData = yearlyData;
-        } catch (e) {
-            console.error("Yearly data fetch failed:", e);
-            yearlyData = cachedYearlyData;
-        }
-
-        doctors.forEach((dr, idx) => {
+        doctors.forEach((dr, i) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
             
             if (database[key]) {
                 Object.keys(database[key]).forEach(dayKey => {
                     const dData = database[key][dayKey];
-                    const v = getDrValue(dData, dr, idx);
-                    mw += (+v.w || 0);
-                    mr += (+v.r || 0);
+                    if (dData && dData[i]) {
+                        mw += (+dData[i].w || 0);
+                        mr += (+dData[i].r || 0);
+                    }
                 });
             }
 
-            Object.keys(yearlyData).forEach(k => {
-                if (yearlyData[k]) {
-                    Object.keys(yearlyData[k]).forEach(dayKey => {
-                        const dData = yearlyData[k][dayKey];
-                        const v = getDrValue(dData, dr, idx);
-                        yw += (+v.w || 0);
-                        yr += (+v.r || 0);
+            Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
+                if (database[k]) {
+                    Object.keys(database[k]).forEach(dayKey => {
+                        const dData = database[k][dayKey];
+                        if (dData && dData[i]) {
+                            yw += (+dData[i].w || 0);
+                            yr += (+dData[i].r || 0);
+                        }
                     });
                 }
             });
@@ -483,9 +443,8 @@
     window.updateRates = async () => {
         config.w_rate = +document.getElementById('rateW').value;
         config.r_rate = +document.getElementById('rateR').value;
-        await saveMetaToFirebase();
+        await saveToFirebase();
         alert("💰 Rates Updated!");
-        await window.updateUI();
     };
 
     window.updatePasswords = async () => {
@@ -493,28 +452,17 @@
         config.admin_pass = document.getElementById('cfgAdminP').value;
         config.user_user = document.getElementById('cfgUserU').value;
         config.user_pass = document.getElementById('cfgUserP').value;
-        await saveMetaToFirebase();
+        await saveToFirebase();
         alert("🔑 Passwords Updated!");
     };
 
     window.addDr = async () => {
-        const n = document.getElementById('newDr').value.trim();
-        if(n && !doctors.includes(n)) { 
-            doctors.push(n); 
-            document.getElementById('newDr').value=''; 
-            await saveMetaToFirebase(); 
-            window.renderDrMgr(); 
-            await window.updateUI(); 
-        }
+        const n = document.getElementById('newDr').value;
+        if(n) { doctors.push(n); document.getElementById('newDr').value=''; await saveToFirebase(); window.renderDrMgr(); }
     };
 
     window.removeDr = async (i) => {
-        if(confirm(`Delete ${doctors[i]}?`)) { 
-            doctors.splice(i,1); 
-            await saveMetaToFirebase(); 
-            window.renderDrMgr(); 
-            await window.updateUI(); 
-        }
+        if(confirm(`Delete ${doctors[i]}?`)) { doctors.splice(i,1); await saveToFirebase(); window.renderDrMgr(); }
     };
 
     window.renderDrMgr = () => {
@@ -526,31 +474,13 @@
         `).join('');
     }
 
-    async function saveMetaToFirebase() {
-        await setDoc(doc(db, "xray_system", "meta_data"), { cfg: config, drs: doctors }, { merge: true });
-    }
-
-    async function saveCurrentMonthToFirebase() {
-        const key = currentMonthKey;
-        const d = document.getElementById('dayIn').value;
-        
-        const cleanedDayData = {};
-        if (database[key]?.[d]) {
-            Object.keys(database[key][d]).forEach(k => {
-                cleanedDayData[k] = database[key][d][k];
-            });
-        }
-
-        const updatePayload = {};
-        updatePayload[`days.${d}`] = cleanedDayData;
-
-        await setDoc(doc(db, "xray_months", key), updatePayload, { merge: true });
-        await window.updateUI();
+    async function saveToFirebase() {
+        await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors }, { merge: true });
     }
 
     window.openFullSheet = () => {
         document.getElementById('fullSheetModal').style.display = 'block';
-        const key = currentMonthKey;
+        const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         
         let headerHtml = `<tr><th class="sticky-col">Doctor</th>`;
         for (let day = 1; day <= 31; day++) {
@@ -561,43 +491,19 @@
         headerHtml += `<th>W</th><th>R</th></tr>`;
 
         let bodyHtml = "";
-        let dayTotals = Array.from({length: 32}, () => ({w: 0, r: 0})); 
-        let grandW = 0, grandR = 0;
-
-        doctors.forEach((dr, idx) => {
+        doctors.forEach((dr, i) => {
             let rowHtml = `<tr><td class="dr-name sticky-col">${dr}</td>`;
             let totalW = 0, totalR = 0;
-            let hasData = false;
             
             for (let day = 1; day <= 31; day++) {
-                const val = getDrValue(database[key]?.[day], dr, idx);
+                const val = database[key]?.[day]?.[i] || { w: '', r: '' };
                 rowHtml += `<td>${val.w}</td><td>${val.r}</td>`;
-                
-                const wNum = (+val.w || 0);
-                const rNum = (+val.r || 0);
-                
-                totalW += wNum;
-                totalR += rNum;
-                
-                dayTotals[day].w += wNum;
-                dayTotals[day].r += rNum;
-                
-                if(wNum > 0 || rNum > 0) hasData = true;
+                totalW += (+val.w || 0);
+                totalR += (+val.r || 0);
             }
             rowHtml += `<td style="color:#6366f1; font-weight:bold;">${totalW}</td><td style="color:#6366f1; font-weight:bold;">${totalR}</td></tr>`;
-            
-            grandW += totalW;
-            grandR += totalR;
-
-            if(hasData) bodyHtml += rowHtml;
+            if(totalW + totalR > 0) bodyHtml += rowHtml;
         });
-
-        let totalRowHtml = `<tr class="grand-total-row"><td class="sticky-col">TOTAL</td>`;
-        for (let day = 1; day <= 31; day++) {
-            totalRowHtml += `<td>${dayTotals[day].w || ''}</td><td>${dayTotals[day].r || ''}</td>`;
-        }
-        totalRowHtml += `<td>${grandW}</td><td>${grandR}</td></tr>`;
-        bodyHtml += totalRowHtml;
 
         document.getElementById('fullSheetTable').innerHTML = `<thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody>`;
     };
