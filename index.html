@@ -59,41 +59,13 @@
             .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; background: #ffffff !important; }
             .btn-print, .btn, .status-bar, .no-print, input, select { display: none !important; }
             .card { background: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
-            
             h3 { font-size: 20px !important; margin-bottom: 15px !important; text-align: center; color: #000000 !important; font-weight: bold; }
-            
             table { font-size: 13px !important; width: 100% !important; border: 1.5px solid #000000 !important; border-collapse: collapse; background: #ffffff !important; }
-            
-            th { 
-                background: #ffffff !important; 
-                color: #000000 !important; 
-                font-size: 13px !important; 
-                padding: 10px 4px !important; 
-                border: 1.5px solid #000000 !important; 
-                font-weight: bold; 
-            }
-            
-            td { 
-                padding: 10px 4px !important; 
-                border: 1.5px solid #000000 !important; 
-                font-size: 13px !important; 
-                font-weight: bold; 
-                color: #000000 !important; 
-                background: #ffffff !important;
-            }
-            
+            th { background: #ffffff !important; color: #000000 !important; font-size: 13px !important; padding: 10px 4px !important; border: 1.5px solid #000000 !important; font-weight: bold; }
+            td { padding: 10px 4px !important; border: 1.5px solid #000000 !important; font-size: 13px !important; font-weight: bold; color: #000000 !important; background: #ffffff !important; }
             .dr-name { background: #ffffff !important; color: #000000 !important; padding-left: 10px !important; text-align: left; }
             td:last-child { color: #000000 !important; background: #ffffff !important; }
-            
-            .grand-total-row td { 
-                background: #ffffff !important; 
-                color: #000000 !important; 
-                font-size: 14px !important; 
-                font-weight: 900 !important;
-                border-top: 2px solid #000000 !important; 
-                border-bottom: 4px double #000000 !important; 
-            }
-            
+            .grand-total-row td { background: #ffffff !important; color: #000000 !important; font-size: 14px !important; font-weight: 900 !important; border-top: 2px solid #000000 !important; border-bottom: 4px double #000000 !important; }
             .sheet-table th { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
             .sheet-table td { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
             .sticky-col { position: static !important; background: #ffffff !important; }
@@ -242,7 +214,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAo0NxlLIUtWzIJJx8Ein5Ftidacw0W9Lw",
@@ -258,8 +230,8 @@
 
     let doctors = [], database = {}, currentMonthKey = "", config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
     let unsubscribeCurrentMonth = null;
+    let cachedYearlyData = {};
 
-    // စနစ်တစ်ခုလုံးစာ Metadata (ဆရာဝန်စာရင်းနှင့် ကွန်ဖစ်) ကို Sync လုပ်ခြင်း
     function startMetaSync() {
         onSnapshot(doc(db, "xray_system", "meta_data"), (snapshot) => {
             if (snapshot.exists()) {
@@ -267,16 +239,18 @@
                 config = data.cfg || config; 
                 doctors = data.drs || [];
                 window.renderDrMgr();
-                // ယူဇာက ရွေးထားတဲ့ လအလိုက် ဒေတာကို Sync ပြန်လုပ်ရန်
                 setupMonthlySync();
+                
+                // Real-time ကာကွယ်ချက်- Admin က ဆရာဝန်အမည်တွေပြင်/ဖျက်လိုက်ရင် User ဖွင့်ထားတဲ့ စာရင်းသွင်းကွက်ထဲမှာပါ Dynamic အလိုအလျောက် ပြောင်းသွားစေရန်
+                if(document.getElementById('entryModal').style.display === 'block') {
+                    filterDoctors();
+                }
             } else {
-                // အကယ်၍ Firestore မှာ ဘာမှမရှိသေးရင် Default စတင်သိမ်းဆည်းရန်
                 saveMetaToFirebase();
             }
         });
     }
 
-    // ရွေးချယ်ထားသော လအလိုက် ဒေတာများကို သီးသန့်ခွဲ၍ Sync လုပ်ခြင်း (Document Size မပြည့်စေရန်)
     function setupMonthlySync() {
         const m = document.getElementById('monthIn').value;
         const y = document.getElementById('yearIn').value;
@@ -300,6 +274,11 @@
                 database[targetKey] = {};
             }
             window.updateUI();
+            
+            if(document.getElementById('entryModal').style.display === 'block') {
+                filterDoctors();
+            }
+
             document.getElementById('stat-dot').className = "status-dot online-dot";
             document.getElementById('stat-text').innerText = "Online";
         }, (error) => {
@@ -349,7 +328,8 @@
     };
 
     window.filterDoctors = () => {
-        window.renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(document.getElementById('drSearch').value.toLowerCase())));
+        const searchVal = document.getElementById('drSearch').value.toLowerCase();
+        window.renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(searchVal)));
     };
 
     window.renderEntryRows = (list) => {
@@ -359,15 +339,18 @@
             const val = database[key]?.[d]?.[idx] || {w:'', r:''};
             return `<div class="entry-row">
                 <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
-                <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal(${idx}, 'w', this.value)">
-                <input type="number" value="${val.r}" placeholder="R" oninput="window.updateVal(${idx}, 'r', this.value)">
+                <input type="number" value="${val.w}" placeholder="W" oninput="window.updateVal('${dr}', 'w', this.value)">
+                <input type="number" value="${val.r}" placeholder="R" oninput="window.updateVal('${dr}', 'r', this.value)">
             </div>`;
         }).join('');
         window.calcDaily();
     }
 
-    window.updateVal = (idx, type, val) => {
+    window.updateVal = (drName, type, val) => {
         const d = document.getElementById('dayIn').value, key = currentMonthKey;
+        const idx = doctors.indexOf(drName);
+        if (idx === -1) return; // စိတ်ချရမှု စစ်ဆေးချက် - စာရင်းသွင်းနေတုန်း Admin ဖျက်လိုက်ရင် ဘာမှ ဆက်မလုပ်ပါ
+
         if(!database[key]) database[key] = {}; 
         if(!database[key][d]) database[key][d] = {};
         if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
@@ -388,9 +371,7 @@
         document.getElementById('d-all').innerText = tw+tr; document.getElementById('active-dr-count').innerText = active;
     }
 
-    window.updateUI = () => {
-        setupMonthlySync(); // လပြောင်းသွားခဲ့လျှင် ဒေတာ Sync အသစ်လုပ်ရန်
-
+    window.updateUI = async () => {
         const m = document.getElementById('monthIn').value, y = document.getElementById('yearIn').value, key = `${m}_${y}`;
         document.getElementById('y-label').innerText = y;
         document.getElementById('m-print-label').innerText = m + " " + y;
@@ -402,6 +383,21 @@
 
         let grandYearWQty = 0, grandYearRQty = 0, grandYearTotalAmt = 0;
         
+        let yearlyData = {};
+        try {
+            const q = collection(db, "xray_months");
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                if(doc.id.endsWith(`_${y}`)) {
+                    yearlyData[doc.id] = doc.data().days || {};
+                }
+            });
+            cachedYearlyData = yearlyData;
+        } catch (e) {
+            console.error("Yearly data fetch failed:", e);
+            yearlyData = cachedYearlyData;
+        }
+
         doctors.forEach((dr, i) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
             
@@ -415,11 +411,10 @@
                 });
             }
 
-            // နှစ်ချုပ်တွက်ချက်မှု- လက်ရှိ memory ထဲရှိနေသော ဒေတာဖြင့်သာတွက်ချက်မည်
-            Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
-                if (database[k]) {
-                    Object.keys(database[k]).forEach(dayKey => {
-                        const dData = database[k][dayKey];
+            Object.keys(yearlyData).forEach(k => {
+                if (yearlyData[k]) {
+                    Object.keys(yearlyData[k]).forEach(dayKey => {
+                        const dData = yearlyData[k][dayKey];
                         if (dData && dData[i]) {
                             yw += (+dData[i].w || 0);
                             yr += (+dData[i].r || 0);
@@ -480,6 +475,7 @@
         config.r_rate = +document.getElementById('rateR').value;
         await saveMetaToFirebase();
         alert("💰 Rates Updated!");
+        await window.updateUI();
     };
 
     window.updatePasswords = async () => {
@@ -492,12 +488,23 @@
     };
 
     window.addDr = async () => {
-        const n = document.getElementById('newDr').value;
-        if(n) { doctors.push(n); document.getElementById('newDr').value=''; await saveMetaToFirebase(); window.renderDrMgr(); }
+        const n = document.getElementById('newDr').value.trim();
+        if(n && !doctors.includes(n)) { 
+            doctors.push(n); 
+            document.getElementById('newDr').value=''; 
+            await saveMetaToFirebase(); 
+            window.renderDrMgr(); 
+            await window.updateUI(); 
+        }
     };
 
     window.removeDr = async (i) => {
-        if(confirm(`Delete ${doctors[i]}?`)) { doctors.splice(i,1); await saveMetaToFirebase(); window.renderDrMgr(); }
+        if(confirm(`Delete ${doctors[i]}?`)) { 
+            doctors.splice(i,1); 
+            await saveMetaToFirebase(); 
+            window.renderDrMgr(); 
+            await window.updateUI(); 
+        }
     };
 
     window.renderDrMgr = () => {
@@ -509,15 +516,31 @@
         `).join('');
     }
 
-    // ဆရာဝန်များနှင့် ကွန်ဖစ်များကို သီးသန့် meta_data ထဲသိမ်းဆည်းခြင်း
     async function saveMetaToFirebase() {
         await setDoc(doc(db, "xray_system", "meta_data"), { cfg: config, drs: doctors }, { merge: true });
     }
 
-    // နေ့စဉ်စာရင်းများကို သက်ဆိုင်ရာ လအလိုက် သီးသန့် Document ထဲသို့ခွဲသိမ်းခြင်း
+    // နောက်ဆုံးပြင်ဆင်ချက်- စာရင်းသိမ်းသည့်အချိန်တွင် လက်ရှိရှိနေသော ဆရာဝန်အမှန်စာရင်းကို တိုက်ရိုက်သန့်စင်ပြီးမှ သွားသိမ်းပေးလို့ Index လွဲပြီး အခြားသူစာရင်း ပျက်စီးမည့်ဘေးမှ ရာနှုန်းပြည့် စိတ်ချရသွားပါပြီ
     async function saveCurrentMonthToFirebase() {
         const key = currentMonthKey;
-        await setDoc(doc(db, "xray_months", key), { days: database[key] || {} }, { merge: true });
+        const d = document.getElementById('dayIn').value;
+        
+        // လက်ရှိ local memory ထဲမှာရှိတဲ့ data ကို clean ဖြစ်အောင် mapping အရင်လုပ်ခြင်း
+        const cleanedDayData = {};
+        if (database[key]?.[d]) {
+            Object.keys(database[key][d]).forEach(oldIdx => {
+                // လက်ရှိ doctors array ထဲမှာ အဲဒီဆရာဝန် ရှိသေးရဲ့လား ပြန်ရှာပါတယ်
+                if(database[key][d][oldIdx]) {
+                    cleanedDayData[oldIdx] = database[key][d][oldIdx];
+                }
+            });
+        }
+
+        const updatePayload = {};
+        updatePayload[`days.${d}`] = cleanedDayData;
+
+        await setDoc(doc(db, "xray_months", key), updatePayload, { merge: true });
+        await window.updateUI();
     }
 
     window.openFullSheet = () => {
@@ -533,7 +556,7 @@
         headerHtml += `<th>W</th><th>R</th></tr>`;
 
         let bodyHtml = "";
-        let dayTotals = Array.from({length: 32}, () => ({w: 0, r: 0})); // နေ့စဉ် Total တွက်ရန် Array
+        let dayTotals = Array.from({length: 32}, () => ({w: 0, r: 0})); 
         let grandW = 0, grandR = 0;
 
         doctors.forEach((dr, i) => {
@@ -564,7 +587,6 @@
             if(hasData) bodyHtml += rowHtml;
         });
 
-        // ဇယားကွက်အောက်ခြေတွင် နေ့အလိုက် စုစုပေါင်း (Grand Total) ကို ပြသပေးခြင်း
         let totalRowHtml = `<tr class="grand-total-row"><td class="sticky-col">TOTAL</td>`;
         for (let day = 1; day <= 31; day++) {
             totalRowHtml += `<td>${dayTotals[day].w || ''}</td><td>${dayTotals[day].r || ''}</td>`;
