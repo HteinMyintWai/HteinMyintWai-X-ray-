@@ -48,6 +48,7 @@
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
+        /* PRINT ဆိုင်ရာ စတိုင်များ */
         @media print {
             body * { visibility: hidden; }
             .print-area, .print-area * { 
@@ -176,7 +177,7 @@
     let doctors = [], database = {}, config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-    // Date/Year Safe Fallback Functions
+    // Date/Year Safety Check Functions
     function getSafeDay() {
         const el = document.getElementById('dayIn');
         if (!el) return new Date().getDate();
@@ -194,7 +195,7 @@
         return y;
     }
 
-    // Backwards Compatible Key Resolver (Old "Jan_2026" & New "01_2026" Dual Support)
+    // ဒေတာဟောင်းရော ဒေတာသစ်ပါ ဖတ်ပေးနိုင်သည့် Key Resolver (ဒေတာမပျက်စေရန် အဓိကအချက်)
     function getDatabaseKeys(monthStr, yearNum) {
         const mIdx = months.indexOf(monthStr);
         const mNumStr = String(mIdx + 1).padStart(2, '0');
@@ -213,6 +214,7 @@
                 database = data.db || {}; 
                 config = data.cfg || config; 
                 doctors = data.drs || [];
+                
                 if(sessionStorage.getItem('isLoggedIn') === 'true') {
                     window.updateUI();
                     window.renderDrMgr();
@@ -237,7 +239,7 @@
     function boot() {
         document.getElementById('login-screen').style.display='none';
         
-        // Secure UI Injection
+        // Secure UI Injection (Inspect element ဖြင့် ကျော်ဝင်၍မရအောင် ကာကွယ်ခြင်း)
         document.getElementById('app-root').innerHTML = `
             <div id="app-body">
                 <div class="status-bar">
@@ -291,12 +293,13 @@
                         <table id="yearlyTable">
                             <thead>
                                 <tr><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
-                            </table>
-                        </div>
-                        <button class="btn btn-print no-print" onclick="window.print()">
-                            <span class="material-icons">print</span> နှစ်ချုပ် PRINT ထုတ်ရန်
-                        </button>
+                            </thead>
+                            <tbody id="y-table-body"></tbody>
+                        </table>
                     </div>
+                    <button class="btn btn-print no-print" onclick="window.print()">
+                        <span class="material-icons">print</span> နှစ်ချုပ် PRINT ထုတ်ရန်
+                    </button>
                 </div>
             </div>`;
 
@@ -309,7 +312,7 @@
         document.getElementById('dayIn').value = d.getDate();
         document.getElementById('yearIn').value = d.getFullYear();
 
-        // Safe Setup Change Listeners
+        // Safe Change Event Listeners (Error ကင်းဝေးစေရန်)
         document.getElementById('dayIn').addEventListener('change', () => window.updateUI());
         document.getElementById('monthIn').addEventListener('change', () => window.updateUI());
         document.getElementById('yearIn').addEventListener('change', () => window.updateUI());
@@ -358,12 +361,13 @@
         window.calcDaily();
     }
 
+    // တပြိုင်နက်ရေးလျှင် Overwrite ဖြစ်ပြီး ဒေတာပျက်ခြင်းမှ ကာကွယ်ပေးသည့် အရေးကြီးဆုံးအပိုင်း
     window.updateVal = (idx, type, val) => {
         const d = getSafeDay(), m = document.getElementById('monthIn').value, y = getSafeYear();
         const keys = getDatabaseKeys(m, y);
-        const writeKey = keys[1]; // Future-proof format ("MM_YYYY")
-        
-        // Transfer historical structure if editing old block
+        const writeKey = keys[1]; // အနာဂတ်အတွက် စံနမူနာ ပုံစံသစ်ဖြင့် သိမ်းခြင်း
+
+        // သုံးနေစဉ် Admin ဘက်က ပြင်လိုက်ပါက ဒေတာအဟောင်းနှင့် ရောမသွားစေရန် တိုက်ရိုက်ချိတ်ဆက်ပေးခြင်း
         if(!database[writeKey] && database[keys[0]]) {
             database[writeKey] = database[keys[0]];
             delete database[keys[0]];
@@ -499,6 +503,7 @@
         `).join('');
     }
 
+    // ဒေတာလုံခြုံရေးအတွက် Merge စနစ်သုံးပြီး အပြီးသတ်သိမ်းဆည်းပေးသည့် ပင်မ Function
     async function saveToFirebase() {
         await setDoc(doc(db, "xray_system", "main_data"), { db: database, cfg: config, drs: doctors }, { merge: true });
     }
@@ -550,6 +555,7 @@
         setTimeout(() => { styleEl.innerHTML = ""; }, 1000);
     };
 
+    // စနစ်ကို စတင်ပတ်မောင်းခြင်း
     startSync();
 </script>
 </body>
