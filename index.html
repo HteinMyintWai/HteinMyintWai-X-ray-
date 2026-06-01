@@ -31,7 +31,6 @@
         td { padding: 8px 2px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; background: white; }
         .dr-name { text-align: left; padding-left: 8px; color: var(--primary); background: #f8fafc; }
         
-        /* အောက်ဆုံး Grand Total Row အတွက် စတိုင် */
         .grand-total-row td { background-color: #f0fdf4 !important; color: #166534 !important; font-size: 13px; font-weight: 800; border-top: 2px solid #15803d !important; border-bottom: 2px double #15803d !important; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; overflow-y: auto; padding: 15px; }
@@ -48,47 +47,56 @@
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* PRINT ထုတ်ချိန် အရောင်လှလှလေးနှင့် ကြည့်ကောင်းအောင် ပြင်ဆင်ထားသည့်အပိုင်း */
+        /* PRINT ထုတ်ချိန် အဖြူထည်စတိုင် */
         @media print {
             body * { visibility: hidden; }
             .print-area, .print-area * { 
                 visibility: visible; 
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: economy !important;
+                print-color-adjust: economy !important;
             }
-            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
+            body { background: #ffffff !important; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; background: #ffffff !important; }
             .btn-print, .btn, .status-bar, .no-print, input, select { display: none !important; }
+            .card { background: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
             
-            h3 { font-size: 22px !important; margin-bottom: 20px !important; text-align: center; color: #1e3a8a !important; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 10px; }
-            table { font-size: 14px !important; width: 100% !important; border: 1px solid #cbd5e1 !important; border-collapse: collapse; }
+            h3 { font-size: 20px !important; margin-bottom: 15px !important; text-align: center; color: #000000 !important; font-weight: bold; }
+            
+            table { font-size: 13px !important; width: 100% !important; border: 1.5px solid #000000 !important; border-collapse: collapse; background: #ffffff !important; }
             
             th { 
-                background-color: #1e293b !important; 
-                color: #ffffff !important; 
-                font-size: 14px !important; 
-                padding: 12px 5px !important; 
-                border: 1px solid #475569 !important; 
+                background: #ffffff !important; 
+                color: #000000 !important; 
+                font-size: 13px !important; 
+                padding: 10px 4px !important; 
+                border: 1.5px solid #000000 !important; 
                 font-weight: bold; 
             }
             
-            td { padding: 12px 5px !important; border: 1px solid #cbd5e1 !important; font-size: 14px !important; font-weight: bold; color: #334155 !important; }
-            .dr-name { background-color: #eff6ff !important; color: #2563eb !important; padding-left: 12px !important; font-size: 14px !important; }
-            
-            td:last-child { color: #1d4ed8 !important; background-color: #f8fafc !important; }
-            
-            /* Print ထုတ်ချိန် Grand Total လိုင်းအား ကာလာပိုထင်ရှားစေရန် */
-            .grand-total-row td { 
-                background-color: #dcfce7 !important; 
-                color: #14532d !important; 
-                font-size: 15px !important; 
-                font-weight: 900 !important;
-                border-top: 2px solid #16a34a !important; 
-                border-bottom: 3px double #16a34a !important; 
+            td { 
+                padding: 10px 4px !important; 
+                border: 1.5px solid #000000 !important; 
+                font-size: 13px !important; 
+                font-weight: bold; 
+                color: #000000 !important; 
+                background: #ffffff !important;
             }
             
-            .sheet-table th { background-color: #334155 !important; font-size: 11px !important; padding: 6px 3px !important; }
-            .sheet-table td { font-size: 11px !important; padding: 6px 3px !important; }
-            .sticky-col { position: static !important; background: transparent !important; }
+            .dr-name { background: #ffffff !important; color: #000000 !important; padding-left: 10px !important; text-align: left; }
+            td:last-child { color: #000000 !important; background: #ffffff !important; }
+            
+            .grand-total-row td { 
+                background: #ffffff !important; 
+                color: #000000 !important; 
+                font-size: 14px !important; 
+                font-weight: 900 !important;
+                border-top: 2px solid #000000 !important; 
+                border-bottom: 4px double #000000 !important; 
+            }
+            
+            .sheet-table th { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
+            .sheet-table td { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
+            .sticky-col { position: static !important; background: #ffffff !important; }
         }
         @page { size: auto; margin: 15mm 10mm 15mm 10mm; }
     </style>
@@ -352,7 +360,6 @@
         document.getElementById('m-print-label').innerText = m + " " + y;
         let mHtml = "", yHtml = "";
         
-        // Grand Total တွက်ရန် Variable များ
         let grandMonthWQty = 0, grandMonthWAmt = 0;
         let grandMonthRQty = 0, grandMonthRAmt = 0;
         let grandMonthTotalAmt = 0;
@@ -387,25 +394,24 @@
             if(mw+mr > 0) {
                 const wAmt = mw * config.w_rate, rAmt = mr * config.r_rate;
                 const rowTot = wAmt + rAmt;
-                mHtml += `<tr><td class="dr-name">${dr}</td><td>${mw}</td><td>${wAmt.toLocaleString()}</td><td>${mr}</td><td>${rAmt.toLocaleString()}</td><td style="color:blue;">${rowTot.toLocaleString()}</td></tr>`;
+                /* စုစုပေါင်း Total ကွက်အား ခရမ်းပြာရောင် (#6366f1) ပြောင်းလဲထားသည့်အပိုင်း */
+                mHtml += `<tr><td class="dr-name">${dr}</td><td>${mw}</td><td>${wAmt.toLocaleString()}</td><td>${mr}</td><td>${rAmt.toLocaleString()}</td><td style="color:#6366f1; font-weight:bold;">${rowTot.toLocaleString()}</td></tr>`;
                 
-                // လချုပ်စုစုပေါင်းများကို ပေါင်းထည့်ခြင်း
                 grandMonthWQty += mw; grandMonthWAmt += wAmt;
                 grandMonthRQty += mr; grandMonthRAmt += rAmt;
                 grandMonthTotalAmt += rowTot;
             }
             if(yw+yr > 0) {
                 const tot = (yw * config.w_rate) + (yr * config.r_rate);
-                yHtml += `<tr><td class="dr-name">${dr}</td><td>${yw}</td><td>${yr}</td><td>${tot.toLocaleString()}</td></tr>`;
+                /* စုစုပေါင်း Grand Total ကွက်အား ခရမ်းပြာရောင် (#6366f1) ပြောင်းလဲထားသည့်အပိုင်း */
+                yHtml += `<tr><td class="dr-name">${dr}</td><td>${yw}</td><td>${yr}</td><td style="color:#6366f1; font-weight:bold;">${tot.toLocaleString()}</td></tr>`;
                 
-                // နှစ်ချုပ်စုစုပေါင်းများကို ပေါင်းထည့်ခြင်း
                 grandYearWQty += yw;
                 grandYearRQty += yr;
                 grandYearTotalAmt += tot;
             }
         });
 
-        // လချုပ်ဇယားအောက်ခြေ စုစုပေါင်းလိုင်း ထည့်သွင်းခြင်း
         if(grandMonthTotalAmt > 0) {
             mHtml += `<tr class="grand-total-row">
                 <td>TOTAL</td>
@@ -417,7 +423,6 @@
             </tr>`;
         }
 
-        // နှစ်ချုပ်ဇယားအောက်ခြေ စုစုပေါင်းလိုင်း ထည့်သွင်းခြင်း
         if(grandYearTotalAmt > 0) {
             yHtml += `<tr class="grand-total-row">
                 <td>TOTAL</td>
@@ -496,7 +501,7 @@
                 totalW += (+val.w || 0);
                 totalR += (+val.r || 0);
             }
-            rowHtml += `<td style="color:blue;">${totalW}</td><td style="color:blue;">${totalR}</td></tr>`;
+            rowHtml += `<td style="color:#6366f1; font-weight:bold;">${totalW}</td><td style="color:#6366f1; font-weight:bold;">${totalR}</td></tr>`;
             if(totalW + totalR > 0) bodyHtml += rowHtml;
         });
 
