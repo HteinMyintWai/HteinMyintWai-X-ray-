@@ -98,7 +98,7 @@
             <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
         </div>
         <div class="card">
-            <h3 style="text-align:center; margin-top:0;" class="only-print">Monthly Report - <span id="m-print-label"></span></h3>
+            <h3 style="text-align:center; margin-top:0;">Monthly Report - <span id="m-print-label"></span></h3>
             <div style="overflow-x:auto;">
                 <table id="monthlyTable">
                     <thead>
@@ -253,6 +253,7 @@
     window.switchTab = (tab) => {
         if(tab === 'm') { document.getElementById('view-m').style.display = 'block'; document.getElementById('view-y').style.display = 'none'; }
         if(tab === 'y') { document.getElementById('view-m').style.display = 'none'; document.getElementById('view-y').style.display = 'block'; }
+        window.updateUI();
     };
 
     window.openModal = (id) => { document.getElementById(id).style.display = 'block'; if(id === 'settingsModal') window.renderDrMgr(); };
@@ -317,9 +318,29 @@
         
         doctors.forEach((dr, i) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
-            if(database[key]) Object.values(database[key]).forEach(d => { mw += (+d[i]?.w||0); mr += (+d[i]?.r||0); });
+            
+            // လချုပ်အတွက် သက်ဆိုင်ရာ လထဲက ရက်စွဲအားလုံးကို သေချာ ပတ်စစ်ထုတ်ယူခြင်း
+            if (database[key]) {
+                Object.keys(database[key]).forEach(dayKey => {
+                    const dData = database[key][dayKey];
+                    if (dData && dData[i]) {
+                        mw += (+dData[i].w || 0);
+                        mr += (+dData[i].r || 0);
+                    }
+                });
+            }
+
+            // နှစ်ချုပ်အတွက် စစ်ထုတ်ယူခြင်း
             Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
-                if(database[k]) Object.values(database[k]).forEach(d => { yw += (+d[i]?.w||0); yr += (+d[i]?.r||0); });
+                if (database[k]) {
+                    Object.keys(database[k]).forEach(dayKey => {
+                        const dData = database[k][dayKey];
+                        if (dData && dData[i]) {
+                            yw += (+dData[i].w || 0);
+                            yr += (+dData[i].r || 0);
+                        }
+                    });
+                }
             });
 
             if(mw+mr > 0) {
