@@ -45,22 +45,48 @@
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* ✨ PRINT ထုတ်ချိန် စာလုံးအရွယ်အစားနှင့် စတိုင် ပိုမိုကြည့်ကောင်းအောင် ပြင်ဆင်ထားသည့်အပိုင်း */
+        /* ✨ PRINT ထုတ်ချိန် အရောင်လှလှလေးနှင့် ကြည့်ကောင်းအောင် ပြင်ဆင်ထားသည့်အပိုင်း */
         @media print {
-            body * { visibility: hidden; background: transparent !important; color: black !important; }
-            .print-area, .print-area * { visibility: visible; }
+            body * { visibility: hidden; }
+            .print-area, .print-area * { 
+                visibility: visible; 
+                -webkit-print-color-adjust: exact !important; /* Chrome, Safari အတွက် အရောင်ထိန်းစနစ် */
+                print-color-adjust: exact !important;         /* Firefox အတွက် အရောင်ထိန်းစနစ် */
+            }
             .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
-            .btn-print, .btn, .status-bar, .no-print, .modal footer, input, select { display: none !important; }
+            .btn-print, .btn, .status-bar, .no-print, input, select { display: none !important; }
             
-            /* စာလုံးအရွယ်အစား မြှင့်တင်ခြင်းနှင့် ဇယားကွက်ပုံစံ ညှိခြင်း */
-            h3 { font-size: 20px !important; margin-bottom: 20px !important; text-align: center; font-weight: bold; }
-            table { font-size: 14px !important; width: 100% !important; border: 2px solid #000 !important; }
-            th { background: #f1f5f9 !important; color: #000 !important; font-size: 14px !important; padding: 10px 4px !important; border: 1px solid #000 !important; font-weight: bold; }
-            td { padding: 10px 4px !important; border: 1px solid #000 !important; font-size: 14px !important; font-weight: bold; }
-            .dr-name { background: transparent !important; font-size: 14px !important; color: #000 !important; padding-left: 10px !important; }
+            /* ခေါင်းစဉ်ကို ကာလာလှလှလေး ပြင်ဆင်ခြင်း */
+            h3 { font-size: 22px !important; margin-bottom: 20px !important; text-align: center; color: #1e3a8a !important; font-weight: bold; border-bottom: 2px dashed #cbd5e1; padding-bottom: 10px; }
             
-            /* ဇယားကွက် (Full Sheet) အတွက် စာလုံး */
-            .sheet-table th, .sheet-table td { font-size: 11px !important; padding: 6px 3px !important; min-width: auto; }
+            /* ဇယားကွက်ပုံစံနှင့် အရောင်များ */
+            table { font-size: 14px !important; width: 100% !important; border: 1px solid #cbd5e1 !important; border-collapse: collapse; }
+            
+            th { 
+                background-color: #1e293b !important; /* ခေါင်းစဉ်ကို အနက်ရောင်ရင့်ရင့် */
+                color: #ffffff !important; 
+                font-size: 14px !important; 
+                padding: 12px 5px !important; 
+                border: 1px solid #475569 !important; 
+                font-weight: bold; 
+            }
+            
+            td { padding: 12px 5px !important; border: 1px solid #cbd5e1 !important; font-size: 14px !important; font-weight: bold; color: #334155 !important; }
+            
+            /* ဆရာဝန်အမည်ကို ဆွဲဆောင်မှုရှိတဲ့ နောက်ခံဖျော့ဖျော့လေး ပေးခြင်း */
+            .dr-name { 
+                background-color: #eff6ff !important; 
+                color: #2563eb !important; 
+                padding-left: 12px !important; 
+                font-size: 14px !important;
+            }
+            
+            /* စုစုပေါင်း (Total) ကော်လံကို အပြာရောင် Highlight ပြခြင်း */
+            td:last-child { color: #1d4ed8 !important; background-color: #f0fdf4 !important; }
+            
+            /* ဇယားကွက် (Full Sheet) အတွက် စာလုံးနှင့်အရောင် */
+            .sheet-table th { background-color: #334155 !important; font-size: 11px !important; padding: 6px 3px !important; }
+            .sheet-table td { font-size: 11px !important; padding: 6px 3px !important; }
             .sticky-col { position: static !important; background: transparent !important; }
         }
         @page { size: auto; margin: 15mm 10mm 15mm 10mm; }
