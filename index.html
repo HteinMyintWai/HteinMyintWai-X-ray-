@@ -45,16 +45,25 @@
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* Print Style */
+        /* ✨ PRINT ထုတ်ချိန် စာလုံးအရွယ်အစားနှင့် စတိုင် ပိုမိုကြည့်ကောင်းအောင် ပြင်ဆင်ထားသည့်အပိုင်း */
         @media print {
-            body * { visibility: hidden; }
+            body * { visibility: hidden; background: transparent !important; color: black !important; }
             .print-area, .print-area * { visibility: visible; }
-            .print-area { position: absolute; left: 0; top: 0; width: 100%; }
-            .btn-print, .btn, .status-bar, .no-print { display: none !important; }
-            table { font-size: 12px !important; width: 100% !important; }
-            th { background: #eee !important; color: black !important; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; }
+            .btn-print, .btn, .status-bar, .no-print, .modal footer, input, select { display: none !important; }
+            
+            /* စာလုံးအရွယ်အစား မြှင့်တင်ခြင်းနှင့် ဇယားကွက်ပုံစံ ညှိခြင်း */
+            h3 { font-size: 20px !important; margin-bottom: 20px !important; text-align: center; font-weight: bold; }
+            table { font-size: 14px !important; width: 100% !important; border: 2px solid #000 !important; }
+            th { background: #f1f5f9 !important; color: #000 !important; font-size: 14px !important; padding: 10px 4px !important; border: 1px solid #000 !important; font-weight: bold; }
+            td { padding: 10px 4px !important; border: 1px solid #000 !important; font-size: 14px !important; font-weight: bold; }
+            .dr-name { background: transparent !important; font-size: 14px !important; color: #000 !important; padding-left: 10px !important; }
+            
+            /* ဇယားကွက် (Full Sheet) အတွက် စာလုံး */
+            .sheet-table th, .sheet-table td { font-size: 11px !important; padding: 6px 3px !important; min-width: auto; }
+            .sticky-col { position: static !important; background: transparent !important; }
         }
-        @page { size: auto; margin: 10mm; }
+        @page { size: auto; margin: 15mm 10mm 15mm 10mm; }
     </style>
 </head>
 <body>
@@ -319,7 +328,6 @@
         doctors.forEach((dr, i) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
             
-            // လချုပ်အတွက် သက်ဆိုင်ရာ လထဲက ရက်စွဲအားလုံးကို သေချာ ပတ်စစ်ထုတ်ယူခြင်း
             if (database[key]) {
                 Object.keys(database[key]).forEach(dayKey => {
                     const dData = database[key][dayKey];
@@ -330,7 +338,6 @@
                 });
             }
 
-            // နှစ်ချုပ်အတွက် စစ်ထုတ်ယူခြင်း
             Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
                 if (database[k]) {
                     Object.keys(database[k]).forEach(dayKey => {
