@@ -107,7 +107,7 @@
 <div id="entryModal" class="modal">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h2 style="margin:0;">Day <span id="dayLabel"></span></h2>
-        <button class="btn btn-s" style="width:80px;" onclick="closeEntry()">သိမ်းမည်</button>
+        <button class="btn btn-s" style="width:80px;" onclick="closeEntry()">Ref</button>
     </div>
     <input type="text" id="drSearch" style="text-align:left; padding-left:15px; background:#1e293b; color:white;" placeholder="ဆရာဝန်ရှာရန်..." oninput="filterDoctors()">
     <div id="entryRows" style="margin-top:10px;"></div>
@@ -415,7 +415,6 @@
                 });
             }
 
-            // နှစ်ချုပ်ဒေတာကို ခွဲခြားရလွယ်ကူအောင် includes စနစ်သို့ ပြောင်းလဲထားခြင်း
             Object.keys(database).filter(k => k.includes(String(y))).forEach(k => {
                 if (database[k]) {
                     Object.keys(database[k]).forEach(dayKey => {
@@ -508,7 +507,7 @@
         let headerHtml = `<tr><th class="sticky-col">Doctor</th>`;
         for (let day = 1; day <= 31; day++) { headerHtml += `<th colspan="2">Day ${day}</th>`; }
         headerHtml += `<th colspan="2">Total</th></tr><tr><th class="sticky-col"></th>`;
-        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>面</th>`; }
+        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; } // တရုတ်စာလုံး ပြင်ဆင်ပြီး
         headerHtml += `<th>W</th><th>R</th></tr>`;
 
         let bodyHtml = "";
