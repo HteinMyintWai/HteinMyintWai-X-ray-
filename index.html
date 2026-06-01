@@ -48,7 +48,6 @@
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-        /* PRINT ထုတ်ချိန် အဖြူထည်စတိုင် */
         @media print {
             body * { visibility: hidden; }
             .print-area, .print-area * { 
@@ -60,54 +59,20 @@
             .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 0; margin: 0; background: #ffffff !important; }
             .btn-print, .btn, .status-bar, .no-print, input, select { display: none !important; }
             .card { background: #ffffff !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
-            
             h3 { font-size: 20px !important; margin-bottom: 15px !important; text-align: center; color: #000000 !important; font-weight: bold; }
-            
             table { font-size: 13px !important; width: 100% !important; border: 1.5px solid #000000 !important; border-collapse: collapse; background: #ffffff !important; }
-            
-            th { 
-                background: #ffffff !important; 
-                color: #000000 !important; 
-                font-size: 13px !important; 
-                padding: 10px 4px !important; 
-                border: 1.5px solid #000000 !important; 
-                font-weight: bold; 
-            }
-            
-            td { 
-                padding: 10px 4px !important; 
-                border: 1.5px solid #000000 !important; 
-                font-size: 13px !important; 
-                font-weight: bold; 
-                color: #000000 !important; 
-                background: #ffffff !important;
-            }
-            
+            th { background: #ffffff !important; color: #000000 !important; font-size: 13px !important; padding: 10px 4px !important; border: 1.5px solid #000000 !important; font-weight: bold; }
+            td { padding: 10px 4px !important; border: 1.5px solid #000000 !important; font-size: 13px !important; font-weight: bold; color: #000000 !important; background: #ffffff !important; }
             .dr-name { background: #ffffff !important; color: #000000 !important; padding-left: 10px !important; text-align: left; }
             td:last-child { color: #000000 !important; background: #ffffff !important; }
-            
-            .grand-total-row td { 
-                background: #ffffff !important; 
-                color: #000000 !important; 
-                font-size: 14px !important; 
-                font-weight: 900 !important;
-                border-top: 2px solid #000000 !important; 
-                border-bottom: 4px double #000000 !important; 
-            }
-            
+            .grand-total-row td { background: #ffffff !important; color: #000000 !important; font-size: 14px !important; font-weight: 900 !important; border-top: 2px solid #000000 !important; border-bottom: 4px double #000000 !important; }
             .sheet-table th { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
             .sheet-table td { background: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; font-size: 10px !important; padding: 5px 2px !important; }
             .sticky-col { position: static !important; background: #ffffff !important; }
         }
-        
-        /* ဇယားကွက်အပြည့် (Full Sheet) ကို Print ထုတ်လျှင် စာရွက်ကို အလျားလိုက် (Landscape) အလိုအလျောက် ပြောင်းပေးရန် */
         @media print {
-            #fullSheetModal.print-area {
-                width: 100% !important;
-            }
-            #fullSheetModal table {
-                font-size: 8px !important; /* စာလုံးအရွယ်အစားကို စာရွက်ဆံ့အောင် ညှိပေးခြင်း */
-            }
+            #fullSheetModal.print-area { width: 100% !important; }
+            #fullSheetModal table { font-size: 8px !important; }
         }
         @page { size: auto; margin: 15mm 10mm 15mm 10mm; }
     </style>
@@ -123,70 +88,11 @@
     </div>
 </div>
 
-<div id="app-body" style="display:none;">
-    <div class="status-bar">
-        <span>PRO SYSTEM (<span id="role-text"></span>)</span>
-        <div><span id="stat-dot" class="status-dot offline-dot"></span> <span id="stat-text">Connecting...</span></div>
-    </div>
-    
-    <div class="card no-print" style="display:flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-radius: 0 0 12px 12px; border-top: none;">
-        <b>DASHBOARD</b>
-        <div style="display:flex; gap: 15px;">
-            <span class="material-icons" id="admin-gear" style="display:none; cursor:pointer;" onclick="openModal('settingsModal')">settings</span>
-            <span class="material-icons" style="color:var(--danger); cursor:pointer;" onclick="location.reload()">logout</span>
-        </div>
-    </div>
-
-    <div class="no-print" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 12px;">
-        <button class="btn btn-p" onclick="switchTab('m')">လချုပ်</button>
-        <button class="btn btn-s" onclick="switchTab('y')">နှစ်ချုပ်</button>
-        <button class="btn btn-w" onclick="openFullSheet()">ဇယားကွက်</button>
-    </div>
-
-    <div id="view-m" class="print-area">
-        <div class="card no-print">
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
-                <input type="number" id="dayIn" oninput="window.updateUI()">
-                <select id="monthIn" onchange="window.updateUI()"></select>
-            </div>
-            <input type="number" id="yearIn" oninput="window.updateUI()">
-            <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
-        </div>
-        <div class="card">
-            <h3 style="text-align:center; margin-top:0;">Monthly Report - <span id="m-print-label"></span></h3>
-            <div style="overflow-x:auto;">
-                <table id="monthlyTable">
-                    <thead>
-                        <tr><th rowspan="2">Doctor</th><th colspan="2">W (Qty/Amt)</th><th colspan="2">R (Qty/Amt)</th><th rowspan="2">Total</th></tr>
-                        <tr><th>Qty</th><th>Amt</th><th>Qty</th><th>Amt</th></tr>
-                    </thead>
-                    <tbody id="m-table-body"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-print no-print" onclick="window.print()">
-                <span class="material-icons">print</span> လချုပ် PRINT ထုတ်ရန်
-            </button>
-        </div>
-    </div>
-
-    <div id="view-y" style="display:none;" class="card print-area">
-        <h3 style="text-align:center; margin-top:0;">Yearly Summary - <span id="y-label"></span></h3>
-        <div style="overflow-x:auto;">
-            <table id="yearlyTable">
-                <thead>
-                    <tr><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
-                </thead>
-                <tbody id="y-table-body"></tbody>
-            </table>
-        </div>
-        <button class="btn btn-print no-print" onclick="window.print()">
-            <span class="material-icons">print</span> နှစ်ချုပ် PRINT ထုတ်ရန်
-        </button>
-    </div>
-</div>
+<div id="app-root"></div>
 
 <div id="fullSheetModal" class="modal print-area">
-    <style id="fullSheetPrintStyle"></style> <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;" class="no-print">
+    <style id="fullSheetPrintStyle"></style>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;" class="no-print">
         <h3 style="margin:0;">Full Monthly Sheet</h3>
         <div style="display:flex; gap:10px;">
             <button class="btn btn-s" onclick="printFullSheet()"><span class="material-icons">print</span> PRINT</button>
@@ -268,6 +174,37 @@
     const db = getFirestore(app);
 
     let doctors = [], database = {}, config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+    // Date/Year Safe Fallback Functions
+    function getSafeDay() {
+        const el = document.getElementById('dayIn');
+        if (!el) return new Date().getDate();
+        let d = parseInt(el.value, 10);
+        if (isNaN(d) || d < 1) return 1;
+        if (d > 31) { el.value = 31; return 31; }
+        return d;
+    }
+
+    function getSafeYear() {
+        const el = document.getElementById('yearIn');
+        if (!el) return new Date().getFullYear();
+        let y = parseInt(el.value, 10);
+        if (isNaN(y) || y < 1900) return new Date().getFullYear();
+        return y;
+    }
+
+    // Backwards Compatible Key Resolver (Old "Jan_2026" & New "01_2026" Dual Support)
+    function getDatabaseKeys(monthStr, yearNum) {
+        const mIdx = months.indexOf(monthStr);
+        const mNumStr = String(mIdx + 1).padStart(2, '0');
+        return [`${monthStr}_${yearNum}`, `${mNumStr}_${yearNum}`];
+    }
+
+    function getMonthData(monthStr, yearNum) {
+        const keys = getDatabaseKeys(monthStr, yearNum);
+        return database[keys[1]] || database[keys[0]] || null;
+    }
 
     function startSync() {
         onSnapshot(doc(db, "xray_system", "main_data"), (snapshot) => {
@@ -276,33 +213,108 @@
                 database = data.db || {}; 
                 config = data.cfg || config; 
                 doctors = data.drs || [];
-                window.updateUI();
-                window.renderDrMgr();
-                document.getElementById('stat-dot').className = "status-dot online-dot";
-                document.getElementById('stat-text').innerText = "Online";
+                if(sessionStorage.getItem('isLoggedIn') === 'true') {
+                    window.updateUI();
+                    window.renderDrMgr();
+                    const dot = document.getElementById('stat-dot');
+                    const txt = document.getElementById('stat-text');
+                    if(dot && txt) {
+                        dot.className = "status-dot online-dot";
+                        txt.innerText = "Online";
+                    }
+                }
             }
         });
     }
 
     window.doLogin = () => {
         const u = document.getElementById('userIn').value, p = document.getElementById('passIn').value;
-        if(u === config.admin_user && p === config.admin_pass) { sessionStorage.setItem('role', 'admin'); boot(); }
-        else if(u === config.user_user && p === config.user_pass) { sessionStorage.setItem('role', 'user'); boot(); }
+        if(u === config.admin_user && p === config.admin_pass) { sessionStorage.setItem('role', 'admin'); sessionStorage.setItem('isLoggedIn', 'true'); boot(); }
+        else if(u === config.user_user && p === config.user_pass) { sessionStorage.setItem('role', 'user'); sessionStorage.setItem('isLoggedIn', 'true'); boot(); }
         else alert("Login Failed!");
     };
 
     function boot() {
         document.getElementById('login-screen').style.display='none';
-        document.getElementById('app-body').style.display='block';
+        
+        // Secure UI Injection
+        document.getElementById('app-root').innerHTML = `
+            <div id="app-body">
+                <div class="status-bar">
+                    <span>PRO SYSTEM (<span id="role-text"></span>)</span>
+                    <div><span id="stat-dot" class="status-dot online-dot"></span> <span id="stat-text">Online</span></div>
+                </div>
+                
+                <div class="card no-print" style="display:flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-radius: 0 0 12px 12px; border-top: none;">
+                    <b>DASHBOARD</b>
+                    <div style="display:flex; gap: 15px;">
+                        <span class="material-icons" id="admin-gear" style="display:none; cursor:pointer;" onclick="openModal('settingsModal')">settings</span>
+                        <span class="material-icons" style="color:var(--danger); cursor:pointer;" onclick="location.reload()">logout</span>
+                    </div>
+                </div>
+
+                <div class="no-print" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 12px;">
+                    <button class="btn btn-p" onclick="switchTab('m')">လချုပ်</button>
+                    <button class="btn btn-s" onclick="switchTab('y')">နှစ်ချုပ်</button>
+                    <button class="btn btn-w" onclick="openFullSheet()">ဇယားကွက်</button>
+                </div>
+
+                <div id="view-m" class="print-area">
+                    <div class="card no-print">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+                            <input type="number" id="dayIn">
+                            <select id="monthIn"></select>
+                        </div>
+                        <input type="number" id="yearIn">
+                        <button class="btn btn-p" style="width:100%; padding:15px;" onclick="openEntry()"><span class="material-icons">add_box</span> ယနေ့စာရင်းသွင်းရန်</button>
+                    </div>
+                    <div class="card">
+                        <h3 style="text-align:center; margin-top:0;">Monthly Report - <span id="m-print-label"></span></h3>
+                        <div style="overflow-x:auto;">
+                            <table id="monthlyTable">
+                                <thead>
+                                    <tr><th rowspan="2">Doctor</th><th colspan="2">W (Qty/Amt)</th><th colspan="2">R (Qty/Amt)</th><th rowspan="2">Total</th></tr>
+                                    <tr><th>Qty</th><th>Amt</th><th>Qty</th><th>Amt</th></tr>
+                                </thead>
+                                <tbody id="m-table-body"></tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-print no-print" onclick="window.print()">
+                            <span class="material-icons">print</span> လချုပ် PRINT ထုတ်ရန်
+                        </button>
+                    </div>
+                </div>
+
+                <div id="view-y" style="display:none;" class="card print-area">
+                    <h3 style="text-align:center; margin-top:0;">Yearly Summary - <span id="y-label"></span></h3>
+                    <div style="overflow-x:auto;">
+                        <table id="yearlyTable">
+                            <thead>
+                                <tr><th>Doctor Name</th><th>W Total</th><th>R Total</th><th>Grand Total</th></tr>
+                            </table>
+                        </div>
+                        <button class="btn btn-print no-print" onclick="window.print()">
+                            <span class="material-icons">print</span> နှစ်ချုပ် PRINT ထုတ်ရန်
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+
         document.getElementById('role-text').innerText = sessionStorage.getItem('role').toUpperCase();
         if(sessionStorage.getItem('role') === 'admin') document.getElementById('admin-gear').style.display = 'block';
         
-        const d = new Date(), months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const d = new Date();
         document.getElementById('monthIn').innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
         document.getElementById('monthIn').selectedIndex = d.getMonth();
         document.getElementById('dayIn').value = d.getDate();
         document.getElementById('yearIn').value = d.getFullYear();
-        startSync();
+
+        // Safe Setup Change Listeners
+        document.getElementById('dayIn').addEventListener('change', () => window.updateUI());
+        document.getElementById('monthIn').addEventListener('change', () => window.updateUI());
+        document.getElementById('yearIn').addEventListener('change', () => window.updateUI());
+
+        window.updateUI();
     }
 
     window.switchTab = (tab) => {
@@ -315,10 +327,8 @@
     window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
 
     window.openEntry = () => {
-        const dayInput = document.getElementById('dayIn').value;
-        const d = parseInt(dayInput, 10) || new Date().getDate();
         document.getElementById('entryModal').style.display='block';
-        document.getElementById('dayLabel').innerText = d;
+        document.getElementById('dayLabel').innerText = getSafeDay();
         window.renderEntryRows(doctors);
     };
 
@@ -332,16 +342,13 @@
     };
 
     window.renderEntryRows = (list) => {
-        const dayInput = document.getElementById('dayIn').value;
-        const d = parseInt(dayInput, 10) || new Date().getDate();
-        const m = document.getElementById('monthIn').value;
-        const yearInput = document.getElementById('yearIn').value;
-        const y = parseInt(yearInput, 10) || new Date().getFullYear();
-        const key = `${m}_${y}`;
+        const d = getSafeDay(), m = document.getElementById('monthIn').value, y = getSafeYear();
+        const keys = getDatabaseKeys(m, y);
+        const mData = database[keys[1]] || database[keys[0]] || {};
         
         document.getElementById('entryRows').innerHTML = list.map(dr => {
             const idx = doctors.indexOf(dr);
-            const val = database[key]?.[d]?.[idx] || {w:'', r:''};
+            const val = mData[d]?.[idx] || {w:'', r:''};
             return `<div class="entry-row">
                 <div style="color:white; grid-column: span 3; font-weight:bold; font-size:13px;">${dr}</div>
                 <input type="number" value="${val.w}" placeholder="W" onchange="window.updateVal(${idx}, 'w', this.value)">
@@ -352,31 +359,30 @@
     }
 
     window.updateVal = (idx, type, val) => {
-        const dayInput = document.getElementById('dayIn').value;
-        const d = parseInt(dayInput, 10) || new Date().getDate();
-        const m = document.getElementById('monthIn').value;
-        const yearInput = document.getElementById('yearIn').value;
-        const y = parseInt(yearInput, 10) || new Date().getFullYear();
-        const key = `${m}_${y}`;
+        const d = getSafeDay(), m = document.getElementById('monthIn').value, y = getSafeYear();
+        const keys = getDatabaseKeys(m, y);
+        const writeKey = keys[1]; // Future-proof format ("MM_YYYY")
         
-        if(!database[key]) database[key] = {}; 
-        if(!database[key][d]) database[key][d] = {};
-        if(!database[key][d][idx]) database[key][d][idx] = {w:'', r:''};
-        database[key][d][idx][type] = val;
+        // Transfer historical structure if editing old block
+        if(!database[writeKey] && database[keys[0]]) {
+            database[writeKey] = database[keys[0]];
+            delete database[keys[0]];
+        }
+
+        if(!database[writeKey]) database[writeKey] = {}; 
+        if(!database[writeKey][d]) database[writeKey][d] = {};
+        if(!database[writeKey][d][idx]) database[writeKey][d][idx] = {w:'', r:''};
+        database[writeKey][d][idx][type] = val;
         window.calcDaily();
     };
 
     window.calcDaily = () => {
         let tw = 0, tr = 0, active = 0;
-        const dayInput = document.getElementById('dayIn').value;
-        const d = parseInt(dayInput, 10) || new Date().getDate();
-        const m = document.getElementById('monthIn').value;
-        const yearInput = document.getElementById('yearIn').value;
-        const y = parseInt(yearInput, 10) || new Date().getFullYear();
-        const key = `${m}_${y}`;
+        const d = getSafeDay(), m = document.getElementById('monthIn').value, y = getSafeYear();
+        const mData = getMonthData(m, y);
         
         doctors.forEach((_, i) => {
-            const r = database[key]?.[d]?.[i];
+            const r = mData?.[d]?.[i];
             const w = +r?.w || 0, rr = +r?.r || 0;
             if(w > 0 || rr > 0) active++;
             tw += w; tr += rr;
@@ -386,10 +392,9 @@
     }
 
     window.updateUI = () => {
-        const m = document.getElementById('monthIn').value;
-        const yearInput = document.getElementById('yearIn').value;
-        const y = parseInt(yearInput, 10) || new Date().getFullYear();
-        const key = `${m}_${y}`;
+        if(sessionStorage.getItem('isLoggedIn') !== 'true') return;
+        const m = document.getElementById('monthIn').value, y = getSafeYear();
+        const mData = getMonthData(m, y);
         
         document.getElementById('y-label').innerText = y;
         document.getElementById('m-print-label').innerText = m + " " + y;
@@ -404,9 +409,9 @@
         doctors.forEach((dr, i) => {
             let mw = 0, mr = 0, yw = 0, yr = 0;
             
-            if (database[key]) {
-                Object.keys(database[key]).forEach(dayKey => {
-                    const dData = database[key][dayKey];
+            if (mData) {
+                Object.keys(mData).forEach(dayKey => {
+                    const dData = mData[dayKey];
                     if (dData && dData[i]) {
                         mw += (+dData[i].w || 0);
                         mr += (+dData[i].r || 0);
@@ -414,7 +419,7 @@
                 });
             }
 
-            Object.keys(database).filter(k => k.endsWith(y)).forEach(k => {
+            Object.keys(database).filter(k => k.endsWith(String(y))).forEach(k => {
                 if (database[k]) {
                     Object.keys(database[k]).forEach(dayKey => {
                         const dData = database[k][dayKey];
@@ -439,34 +444,21 @@
                 const tot = (yw * config.w_rate) + (yr * config.r_rate);
                 yHtml += `<tr><td class="dr-name">${dr}</td><td>${yw}</td><td>${yr}</td><td style="color:#6366f1; font-weight:bold;">${tot.toLocaleString()}</td></tr>`;
                 
-                grandYearWQty += yw;
-                grandYearRQty += yr;
-                grandYearTotalAmt += tot;
+                grandYearWQty += yw; grandYearRQty += yr; grandYearTotalAmt += tot;
             }
         });
 
         if(grandMonthTotalAmt > 0) {
-            mHtml += `<tr class="grand-total-row">
-                <td>TOTAL</td>
-                <td>${grandMonthWQty}</td>
-                <td>${grandMonthWAmt.toLocaleString()}</td>
-                <td>${grandMonthRQty}</td>
-                <td>${grandMonthRAmt.toLocaleString()}</td>
-                <td>${grandMonthTotalAmt.toLocaleString()}</td>
-            </tr>`;
+            mHtml += `<tr class="grand-total-row"><td>TOTAL</td><td>${grandMonthWQty}</td><td>${grandMonthWAmt.toLocaleString()}</td><td>${grandMonthRQty}</td><td>${grandMonthRAmt.toLocaleString()}</td><td>${grandMonthTotalAmt.toLocaleString()}</td></tr>`;
         }
-
         if(grandYearTotalAmt > 0) {
-            yHtml += `<tr class="grand-total-row">
-                <td>TOTAL</td>
-                <td>${grandYearWQty}</td>
-                <td>${grandYearRQty}</td>
-                <td>${grandYearTotalAmt.toLocaleString()}</td>
-            </tr>`;
+            yHtml += `<tr class="grand-total-row"><td>TOTAL</td><td>${grandYearWQty}</td><td>${grandYearRQty}</td><td>${grandYearTotalAmt.toLocaleString()}</td></tr>`;
         }
 
-        document.getElementById('m-table-body').innerHTML = mHtml;
-        document.getElementById('y-table-body').innerHTML = yHtml;
+        const mBody = document.getElementById('m-table-body');
+        const yBody = document.getElementById('y-table-body');
+        if(mBody) mBody.innerHTML = mHtml;
+        if(yBody) yBody.innerHTML = yHtml;
         
         document.getElementById('rateW').value = config.w_rate; document.getElementById('rateR').value = config.r_rate;
         document.getElementById('cfgAdminU').value = config.admin_user; document.getElementById('cfgAdminP').value = config.admin_pass;
@@ -513,70 +505,52 @@
 
     window.openFullSheet = () => {
         document.getElementById('fullSheetModal').style.display = 'block';
-        const m = document.getElementById('monthIn').value;
-        const yearInput = document.getElementById('yearIn').value;
-        const y = parseInt(yearInput, 10) || new Date().getFullYear();
-        const key = `${m}_${y}`;
+        const m = document.getElementById('monthIn').value, y = getSafeYear();
+        const mData = getMonthData(m, y);
         
         let headerHtml = `<tr><th class="sticky-col">Doctor</th>`;
-        for (let day = 1; day <= 31; day++) {
-            headerHtml += `<th colspan="2">Day ${day}</th>`;
-        }
+        for (let day = 1; day <= 31; day++) { headerHtml += `<th colspan="2">Day ${day}</th>`; }
         headerHtml += `<th colspan="2">Total</th></tr><tr><th class="sticky-col"></th>`;
         for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; }
         headerHtml += `<th>W</th><th>R</th></tr>`;
 
         let bodyHtml = "";
-        let dailyTotals = Array.from({ length: 32 }, () => ({ w: 0, r: 0 })); // Index 1-31 for days, 32 for total row
-        let grandTotalW = 0;
-        let grandTotalR = 0;
+        let dailyTotals = Array.from({ length: 32 }, () => ({ w: 0, r: 0 }));
+        let grandTotalW = 0, grandTotalR = 0;
 
         doctors.forEach((dr, i) => {
             let rowHtml = `<tr><td class="dr-name sticky-col">${dr}</td>`;
-            let totalW = 0, totalR = 0;
-            let hasData = false;
+            let totalW = 0, totalR = 0, hasData = false;
             
             for (let day = 1; day <= 31; day++) {
-                const val = database[key]?.[day]?.[i] || { w: '', r: '' };
+                const val = mData?.[day]?.[i] || { w: '', r: '' };
                 rowHtml += `<td>${val.w}</td><td>${val.r}</td>`;
-                
-                const wNum = (+val.w || 0);
-                const rNum = (+val.r || 0);
-                
-                totalW += wNum;
-                totalR += rNum;
-                
-                dailyTotals[day].w += wNum;
-                dailyTotals[day].r += rNum;
-                
+                const wNum = (+val.w || 0), rNum = (+val.r || 0);
+                totalW += wNum; totalR += rNum;
+                dailyTotals[day].w += wNum; dailyTotals[day].r += rNum;
                 if(wNum > 0 || rNum > 0) hasData = true;
             }
             rowHtml += `<td style="color:#6366f1; font-weight:bold;">${totalW}</td><td style="color:#6366f1; font-weight:bold;">${totalR}</td></tr>`;
-            
-            grandTotalW += totalW;
-            grandTotalR += totalR;
-
+            grandTotalW += totalW; grandTotalR += totalR;
             if(hasData) bodyHtml += rowHtml;
         });
 
-        // ဇယားကွက်အပြည့် (Full Sheet) ရဲ့ အောက်ဆုံးမှာ တစ်ရက်ချင်းစီအလိုက် Grand Total Row ထည့်သွင်းခြင်း
         let totalRowHtml = `<tr class="grand-total-row"><td class="sticky-col">TOTAL</td>`;
-        for (let day = 1; day <= 31; day++) {
-            totalRowHtml += `<td>${dailyTotals[day].w || ''}</td><td>${dailyTotals[day].r || ''}</td>`;
-        }
+        for (let day = 1; day <= 31; day++) { totalRowHtml += `<td>${dailyTotals[day].w || ''}</td><td>${dailyTotals[day].r || ''}</td>`; }
         totalRowHtml += `<td>${grandTotalW}</td><td>${grandTotalR}</td></tr>`;
         bodyHtml += totalRowHtml;
 
         document.getElementById('fullSheetTable').innerHTML = `<thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody>`;
     };
 
-    // ဇယားကွက်အပြည့်ကို Landscape (အလျားလိုက်) ပုံစံဖြင့် စက္ကူမပြတ်ဘဲ Print ထုတ်ပေးမည့် လုပ်ဆောင်ချက်
     window.printFullSheet = () => {
         const styleEl = document.getElementById('fullSheetPrintStyle');
         styleEl.innerHTML = `@media print { @page { size: landscape; margin: 8mm; } }`;
         window.print();
-        setTimeout(() => { styleEl.innerHTML = ""; }, 1000); // Print ရိုက်ပြီးရင် Style ပြန်ဖျက်ပေးခြင်း
+        setTimeout(() => { styleEl.innerHTML = ""; }, 1000);
     };
+
+    startSync();
 </script>
 </body>
 </html>
