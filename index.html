@@ -47,6 +47,8 @@
 
         #login-screen { position: fixed; top:0; left:0; width: 100%; height: 100%; background: #1e293b; z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .del-btn { background: #fff1f2; color: #f43f5e; width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        #clearSearch:hover { color: #ffffff !important; }
 
         @media print {
             body * { visibility: hidden; }
@@ -109,7 +111,10 @@
         <h2 style="margin:0;">Day <span id="dayLabel"></span></h2>
         <button class="btn btn-s" style="width:80px;" onclick="closeEntry()">Ref</button>
     </div>
-    <input type="text" id="drSearch" style="text-align:left; padding-left:15px; background:#1e293b; color:white;" placeholder="ဆရာဝန်ရှာရန်..." oninput="filterDoctors()">
+    <div style="position: relative; display: flex; align-items: center; margin-bottom: 10px;">
+        <input type="text" id="drSearch" style="text-align:left; padding-left:15px; padding-right: 40px; background:#1e293b; color:white; margin-bottom:0;" placeholder="ဆရာဝန်ရှာရန်..." oninput="filterDoctors(); toggleClearBtn();">
+        <span id="clearSearch" class="material-icons" style="position: absolute; right: 10px; cursor: pointer; color: #94a3b8; display: none;" onclick="clearDrSearch()">close</span>
+    </div>
     <div id="entryRows" style="margin-top:10px;"></div>
     <div class="entry-footer">
         <div style="display:flex; justify-content:space-around; font-weight:bold; font-size:14px;">
@@ -175,6 +180,17 @@
 
     let doctors = [], database = {}, config = { admin_user: 'admin', admin_pass: '9999', user_user: 'user', user_pass: '1234', w_rate: 2500, r_rate: 2000 };
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+    window.toggleClearBtn = () => {
+        const btn = document.getElementById('clearSearch');
+        btn.style.display = document.getElementById('drSearch').value ? 'block' : 'none';
+    };
+
+    window.clearDrSearch = () => {
+        document.getElementById('drSearch').value = '';
+        document.getElementById('clearSearch').style.display = 'none';
+        window.filterDoctors();
+    };
 
     function getSafeDay() {
         const el = document.getElementById('dayIn');
@@ -507,7 +523,7 @@
         let headerHtml = `<tr><th class="sticky-col">Doctor</th>`;
         for (let day = 1; day <= 31; day++) { headerHtml += `<th colspan="2">Day ${day}</th>`; }
         headerHtml += `<th colspan="2">Total</th></tr><tr><th class="sticky-col"></th>`;
-        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; } // တရုတ်စာလုံး ပြင်ဆင်ပြီး
+        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; }
         headerHtml += `<th>W</th><th>R</th></tr>`;
 
         let bodyHtml = "";
