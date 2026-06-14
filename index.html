@@ -109,7 +109,14 @@
         <h2 style="margin:0;">Day <span id="dayLabel"></span></h2>
         <button class="btn btn-s" style="width:80px;" onclick="closeEntry()">Ref</button>
     </div>
-    <input type="text" id="drSearch" style="text-align:left; padding-left:15px; background:#1e293b; color:white;" placeholder="ဆရာဝန်ရှာရန်..." oninput="filterDoctors()">
+    
+    <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 10px;">
+        <input type="text" id="drSearch" style="flex: 1; text-align:left; padding-left:15px; background:#1e293b; color:white; margin:0;" placeholder="ဆရာဝန်ရှာရန်..." oninput="filterDoctors()">
+        <button class="btn btn-d" style="width: 40px; padding: 10px 0;" onclick="clearSearch()">
+            <span class="material-icons">close</span>
+        </button>
+    </div>
+
     <div id="entryRows" style="margin-top:10px;"></div>
     <div class="entry-footer">
         <div style="display:flex; justify-content:space-around; font-weight:bold; font-size:14px;">
@@ -337,6 +344,11 @@
     window.filterDoctors = () => {
         window.renderEntryRows(doctors.filter(dr => dr.toLowerCase().includes(document.getElementById('drSearch').value.toLowerCase())));
     };
+    
+    window.clearSearch = () => {
+        document.getElementById('drSearch').value = '';
+        window.renderEntryRows(doctors);
+    };
 
     window.renderEntryRows = (list) => {
         const d = getSafeDay(), m = document.getElementById('monthIn').value, y = getSafeYear();
@@ -507,7 +519,7 @@
         let headerHtml = `<tr><th class="sticky-col">Doctor</th>`;
         for (let day = 1; day <= 31; day++) { headerHtml += `<th colspan="2">Day ${day}</th>`; }
         headerHtml += `<th colspan="2">Total</th></tr><tr><th class="sticky-col"></th>`;
-        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; } // တရုတ်စာလုံး ပြင်ဆင်ပြီး
+        for (let day = 1; day <= 31; day++) { headerHtml += `<th>W</th><th>R</th>`; } 
         headerHtml += `<th>W</th><th>R</th></tr>`;
 
         let bodyHtml = "";
